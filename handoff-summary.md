@@ -31,98 +31,156 @@ The Partner Lead Management Portal V2.0 aims to replace the previous Power Pages
 
 ## Feature Checklist
 
-This checklist will be updated throughout the development process to track progress. Features are grouped by conversation complexity (what can reasonably be accomplished in a single AI session) and include dependency tags where applicable.
+This checklist represents features organized by POC module, with each module focused on a specific technical concern. We will tackle these POC implementations in the order listed, with each building on the lessons learned from previous POCs.
 
 ### ✅ Foundation (Completed)
 - [x] Project bootstrapped with Next.js App Router
 - [x] Basic authentication setup with Auth.js and Microsoft Entra ID
 - [x] Initial API route for Dataverse integration
+- [x] Basic UI components with shadcn/ui and Tailwind
 
-### 🔄 Core Infrastructure [Conversation 1]
-- [ ] Complete Dataverse client implementation 
+### 🔄 Core Infrastructure POC
+- [ ] Complete Dataverse client implementation
 - [ ] Set up proper environment variable configuration
-- [ ] Configure middleware for authentication handling
-- [ ] Implement centralized error handling
 - [ ] Implement token management and caching strategy
+- [ ] Create centralized error handling utilities
+- [ ] Add comprehensive API error responses
+- [ ] Build working demo at `/poc/core` demonstrating data integration
 
-**Conversation Scope**: Focus on establishing a solid foundation for secure API communication and error handling. Address the token caching issues identified in code review.
+**POC Goal**: Create a robust foundation for secure API communication that demonstrates clean separation of concerns and proper error handling.
 
-### 🔒 Authentication & Authorization [Conversation 2] *Depends on: Core Infrastructure*
-- [ ] Complete user authentication flow
-- [ ] Implement protected routes
-- [ ] Add role-based access control (RBAC)
-- [ ] Set up session persistence and management
+### 🔒 Authentication & Authorization POC
+- [ ] Complete user authentication flow with session management
+- [ ] Implement protected routes with middleware
+- [ ] Add role-based access control (RBAC) demonstration
+- [ ] Set up proper auth state persistence
 - [ ] Add CSRF protection
+- [ ] Create working demo at `/poc/auth` showing complete authentication flow
 
-**Conversation Scope**: Build upon the core infrastructure to implement complete authentication flows and security measures.
+**POC Goal**: Demonstrate secure authentication patterns and role-based access control that can be integrated into any part of the application.
 
-### 📊 State Management [Conversation 3] *Depends on: Authentication*
-- [ ] Configure Zustand store(s) for global state
-- [ ] Set up TanStack Query client and basic queries
-- [ ] Implement React Query dev tools for development
-- [ ] Create data validation layer
-
-**Conversation Scope**: Implement state management patterns that will be used throughout the application, establishing consistent data handling approaches.
-
-### 🎨 UI Framework & Design System [Conversation 4]
-- [ ] Implement brand theming with Tailwind
-- [ ] Create layout components (navigation, sidebar, etc.)
-- [ ] Build reusable form components with React Hook Form
+### 🎨 UI Framework & Design System POC
+- [ ] Implement brand theming with Tailwind configuration
+- [ ] Create responsive layout components (navigation, sidebar, etc.)
+- [ ] Build reusable form components with React Hook Form and validation
 - [ ] Add data display components (tables, cards, etc.)
+- [ ] Demonstrate theme switching capability
+- [ ] Create comprehensive demo at `/poc/ui` showcasing all components
 
-**Conversation Scope**: Establish the visual foundations and reusable components that will ensure UI consistency across features.
+**POC Goal**: Build a comprehensive UI toolkit that demonstrates consistent design patterns and responsive components.
 
-### 📋 Lead Management Features [Conversation 5] *Depends on: State Management, UI Framework*
-- [ ] Implement lead listing page with pagination
-- [ ] Create lead detail view
-- [ ] Build lead creation/edit form
-- [ ] Add lead filtering and search
-- [ ] Implement lead status management
-- [ ] Create lead assignment functionality
+### 📊 State Management & Data Handling POC
+- [ ] Configure Zustand store for global state management
+- [ ] Set up TanStack Query client with caching strategies
+- [ ] Implement React Query dev tools for debugging
+- [ ] Create data validation layer with Zod
+- [ ] Demonstrate optimistic updates pattern
+- [ ] Build working demo at `/poc/state` showing data flow
 
-**Conversation Scope**: Develop the core business functionality of the application, focusing on a complete user journey for lead management.
+**POC Goal**: Establish patterns for state management, data fetching, and validation that can be applied consistently across the application.
 
-### 📱 Multi-Tenancy & Theming [Conversation 6] *Depends on: UI Framework*
-- [ ] Implement tenant detection mechanism
-- [ ] Create dynamic theming system
-- [ ] Build tenant configuration management
+### 📋 Lead Management Mini-App POC
+- [ ] Implement lead listing page with pagination and filtering
+- [ ] Create lead detail view with related data
+- [ ] Build lead creation/edit form with validation
+- [ ] Add lead status management workflow
+- [ ] Implement basic reporting capabilities
+- [ ] Create demo at `/poc/leads` demonstrating end-to-end lead management journey
 
-**Conversation Scope**: Extend the application to support multiple tenants with different visual themes and configurations.
+**POC Goal**: Build a small but complete application that integrates all previous POCs to demonstrate a real business workflow.
 
-### 🔄 Data Synchronization [Conversation 7] *Depends on: Lead Management*
-- [ ] Build optimistic UI updates
-- [ ] Implement offline capabilities (if required)
-- [ ] Add performance optimizations for data retrieval
+### 🧪 Testing & Quality Assurance Standards
+- [ ] Set up Jest for unit testing
+- [ ] Configure React Testing Library for component tests
+- [ ] Add Cypress for end-to-end testing (optional)
+- [ ] Implement type checking and linting standards
+- [ ] Create example tests for each POC module
 
-**Conversation Scope**: Enhance the user experience with advanced data handling features that improve perceived performance.
+**Testing Goal**: Establish consistent testing patterns that can be applied across all POC modules.
 
-### 📈 Reporting & Analytics [Conversation 8] *Depends on: Lead Management*
-- [ ] Design reporting dashboard
-- [ ] Implement data visualization components
-- [ ] Create export functionality
+### 🚀 Deployment & Documentation
+- [ ] Set up deployment pipeline example
+- [ ] Create documentation for environment configuration
+- [ ] Document integration points between POCs 
+- [ ] Establish code standards and contribution guidelines
 
-**Conversation Scope**: Add business intelligence features that allow users to analyze and export lead data.
-
-### 🧪 Testing & Quality Assurance [Ongoing]
-- [ ] Set up unit testing framework
-- [ ] Implement integration tests
-- [ ] Create end-to-end tests
-- [ ] Configure linting and code quality tools
-
-**Minimal Testing Requirements per POC**: Each POC should include at least basic unit tests for critical functionality and TypeScript type checking throughout.
-
-### 🚀 Deployment & DevOps [Final Conversation]
-- [ ] Set up CI/CD pipeline
-- [ ] Configure staging and production environments
-- [ ] Implement monitoring and logging
-- [ ] Create documentation for deployment
-
-**Conversation Scope**: Prepare the application for production deployment with proper DevOps practices.
+**Documentation Goal**: Ensure each POC is well-documented with clear integration guidance.
 
 ## Development Approach
 
-The development will proceed in an incremental, feature-by-feature approach. Each feature will be built out completely before moving to the next, including:
+### Modular POC Approach with Integration Path
 
+After careful consideration, we've decided to pursue focused Proof-of-Concept (POC) modules rather than a single comprehensive prototype. This approach offers several advantages:
+
+- **Focused demonstration** of specific technical challenges
+- **Faster validation** of key technologies and patterns
+- **Easier team review** of isolated concerns
+- **Reduced complexity** in each development cycle
+- **Clearer technical boundaries** between components
+
+Each POC will be developed as a standalone module with clear integration points and documentation:
+
+1. **Core Infrastructure POC**: Dataverse client, token management, error handling
+2. **Authentication POC**: Complete auth flows, RBAC implementation
+3. **UI Framework POC**: Component system, theming, layouts
+4. **State Management POC**: Global state, data fetching, caching
+5. **Lead Management Mini-App**: Integration of all previous POCs
+
+Each POC will include:
+- Independent deployment capabilities
+- Integration documentation
+- Consistent patterns and libraries
+- Minimal but sufficient test coverage
+
+This approach enables targeted demonstrations while maintaining a clear path to integration when ready to build the comprehensive solution.
+
+### Shared Libraries & Folder Structure
+
+To ensure consistency across POCs and facilitate future integration, we'll follow these conventions:
+
+#### URL/Route Structure
+- POC demonstration pages: `/poc/{poc-name}` (e.g., `/poc/auth`, `/poc/ui`, `/poc/state`, `/poc/core`)
+- API routes: `/api/{domain}/{action}` (e.g., `/api/leads/list`, `/api/auth/roles`)
+
+#### Folder Structure
+- `lib/`: Shared utilities and clients
+  - `lib/clients/`: API clients (e.g., d365Client.ts)
+  - `lib/utils/`: Helper functions
+  - `lib/hooks/`: Custom React hooks
+  - `lib/types/`: TypeScript interfaces and types
+  - `lib/config/`: Configuration (e.g., environment variables)
+- `components/`: UI components
+  - `components/ui/`: Primitive UI components (from shadcn/ui)
+  - `components/custom/`: Domain-specific components
+  - `components/layouts/`: Page layouts and containers
+- `app/`: Next.js App Router pages and routes
+  - `app/api/`: API routes using BFF pattern
+  - `app/(poc)/`: POC demonstration pages
+- `styles/`: Global styles and theming
+
+#### Naming Conventions
+- Files: kebab-case for general files (e.g., `error-handler.ts`)
+- Components: PascalCase for component files and functions (e.g., `LeadCard.tsx`)
+- Interfaces: Prefixed with "I" (e.g., `ILead`)
+- Types: PascalCase without prefix (e.g., `LeadStatus`)
+- Environment variables: Uppercase with underscores, prefixed by domain (e.g., `AUTH_CLIENT_ID`, `DATAVERSE_URL`)
+
+#### Environment Variables
+Each POC should document its required environment variables in a `.env.example` file, following this pattern:
+```
+# Core Infrastructure
+DATAVERSE_URL=https://yourtenant.crm.dynamics.com
+DATAVERSE_CLIENT_ID=your-client-id
+DATAVERSE_CLIENT_SECRET=your-client-secret
+DATAVERSE_TENANT_ID=your-tenant-id
+
+# Authentication
+AUTH_MICROSOFT_ENTRA_ID_ID=your-client-id
+AUTH_MICROSOFT_ENTRA_ID_SECRET=your-client-secret
+AUTH_MICROSOFT_ENTRA_ID_ISSUER=https://login.microsoftonline.com/your-tenant-id/v2.0
+```
+
+The development of each POC will follow this progression:
 1. Backend API implementation
 2. Data fetching and state management
 3. UI components and interactions
@@ -141,7 +199,7 @@ This section provides guidance for structuring productive AI conversations to de
 4. **Implementation Strategy**: Discuss approach before diving into code
 5. **Code Implementation**: Develop the feature while explaining key decisions
 6. **Review & Refine**: Evaluate the implementation against guiding principles
-7. **Document**: Update the Decisions Log and Technical Debt sections
+7. **Document**: Update BOTH the Decisions Log and Technical Debt sections for each POC (this is critical for maintaining clear documentation)
 
 ### Tips for Effective AI Sessions
 - Focus on one conceptual area per conversation
@@ -172,6 +230,29 @@ Decision: Implemented Azure Key Vault for token caching due to security benefits
 Implications: Requires additional Azure configuration but provides better security and scalability
 ```
 
+### Current Decisions
+
+```
+Decision: Development Approach - Modular POCs vs Comprehensive Prototype
+Problem: Need to determine whether to build separate POCs or a single comprehensive prototype
+Options:
+- Build a single comprehensive prototype with all features
+- Develop separate, focused POCs for key technical areas
+- Create a hybrid approach with interconnected POCs
+Decision: Implement focused POC modules with clear integration paths
+Rationale: 
+- Enables targeted demonstrations of specific technical challenges
+- Allows faster validation of key technologies and patterns
+- Facilitates easier team review of isolated concerns
+- Reduces complexity in each development cycle
+- Establishes clearer technical boundaries between components
+Implications: 
+- Requires careful documentation of integration points
+- Needs consistent patterns across POCs to ensure future compatibility
+- May require refactoring when integrating POCs into a full solution
+```
+
+
 ## Technical Debt Tracking
 
 This section acknowledges shortcuts taken during POC development that would need addressing before production. Each item should include:
@@ -192,7 +273,33 @@ Priority: High
 
 ## Next Steps
 
-Start with the Core Infrastructure items in Conversation 1, as they form the foundation for all other features. Then proceed to Authentication & Authorization to ensure secure access to the application.
+### Immediate Action Items
+
+1. **Complete Core Infrastructure POC**:
+   - Implement the d365Client.ts class with proper token management
+   - Move token caching logic from API route to client
+   - Create centralized error handling utilities
+   - Set up environment variable validation
+   - Complete the BFF test page to demonstrate working integration
+
+2. **Enhance Authentication POC**:
+   - Complete the auth-test page with working authentication flows
+   - Add protected route examples
+   - Implement basic role-based access control (RBAC)
+   - Document integration points with other POCs
+
+3. **Develop UI Framework and Design System POC**:
+   - Expand on existing styling-test with theming capabilities
+   - Create layout components with responsive design
+   - Build form component library with validation
+   - Document component usage and integration patterns
+
+4. **Integrate Documentation Across POCs**:
+   - Create a README for each POC with integration instructions
+   - Define shared interfaces and patterns between POCs
+   - Document environment setup requirements for each POC
+
+Start with the Core Infrastructure items as they form the foundation for all other POCs. Then proceed to Authentication & Authorization to ensure secure access patterns are established before implementing business functionality.
 
 ---
 
