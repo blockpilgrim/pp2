@@ -39,13 +39,13 @@ This checklist represents features organized by POC module, with each module foc
 - [x] Initial API route for Dataverse integration
 - [x] Basic UI components with shadcn/ui and Tailwind
 
-### 🔄 Core Infrastructure POC
-- [ ] Complete Dataverse client implementation
-- [ ] Set up proper environment variable configuration
-- [ ] Implement token management and caching strategy
-- [ ] Create centralized error handling utilities
-- [ ] Add comprehensive API error responses
-- [ ] Build working demo at `/poc/core` demonstrating data integration
+### ✅ Core Infrastructure POC
+- [x] Complete Dataverse client implementation
+- [x] Set up proper environment variable configuration
+- [x] Implement token management and caching strategy
+- [x] Create centralized error handling utilities
+- [x] Add comprehensive API error responses
+- [x] Build working demo at `/poc/core` demonstrating data integration
 
 **POC Goal**: Create a robust foundation for secure API communication that demonstrates clean separation of concerns and proper error handling.
 
@@ -68,6 +68,15 @@ This checklist represents features organized by POC module, with each module foc
 - [ ] Create comprehensive demo at `/poc/ui` showcasing all components
 
 **POC Goal**: Build a comprehensive UI toolkit that demonstrates consistent design patterns and responsive components.
+
+### 🔌 Backend-for-Frontend (BFF) Pattern POC
+- [ ] Implement secure API endpoints following the BFF pattern
+- [ ] Create examples of different API request types (GET, POST, PATCH)
+- [ ] Demonstrate proper error handling and validation
+- [ ] Implement authentication and authorization checks
+- [ ] Build working demo at `/poc/bff` showing API interactions
+
+**POC Goal**: Demonstrate the Backend-for-Frontend architectural pattern using Next.js API routes to create a secure communication layer between the frontend and backend services.
 
 ### 📊 State Management & Data Handling POC
 - [ ] Configure Zustand store for global state management
@@ -123,8 +132,9 @@ Each POC will be developed as a standalone module with clear integration points 
 1. **Core Infrastructure POC**: Dataverse client, token management, error handling
 2. **Authentication POC**: Complete auth flows, RBAC implementation
 3. **UI Framework POC**: Component system, theming, layouts
-4. **State Management POC**: Global state, data fetching, caching
-5. **Lead Management Mini-App**: Integration of all previous POCs
+4. **Backend-for-Frontend (BFF) POC**: API endpoints, request/response handling
+5. **State Management POC**: Global state, data fetching, caching
+6. **Lead Management Mini-App**: Integration of all previous POCs
 
 Each POC will include:
 - Independent deployment capabilities
@@ -155,7 +165,7 @@ To ensure consistency across POCs and facilitate future integration, we'll follo
   - `components/layouts/`: Page layouts and containers
 - `app/`: Next.js App Router pages and routes
   - `app/api/`: API routes using BFF pattern
-  - `app/(poc)/`: POC demonstration pages
+  - `app/poc/`: POC demonstration pages
 - `styles/`: Global styles and theming
 
 #### Naming Conventions
@@ -252,6 +262,113 @@ Implications:
 - May require refactoring when integrating POCs into a full solution
 ```
 
+```
+Decision: Token Caching Strategy for Core Infrastructure POC
+Problem: Need an efficient way to cache Dataverse API tokens to reduce authentication overhead
+Options:
+- In-memory caching
+- Redis caching
+- Database storage
+- Azure Key Vault
+Decision: Implemented in-memory token caching for POC with clear path to production alternatives
+Rationale:
+- Simple to implement for demonstration purposes
+- Sufficient for development environment
+- Clearly documented limitations and production alternatives
+Implications:
+- Will need to be replaced with Redis or Azure Key Vault in production
+- Provides a clean abstraction that can be swapped without changing consumer code
+```
+
+```
+Decision: Error Handling Pattern
+Problem: Need consistent error handling across API routes and client code
+Options:
+- Ad-hoc error handling in each route
+- Generic error middleware
+- Centralized error utility functions with typed errors
+Decision: Implemented centralized error utilities with typed errors
+Rationale:
+- Provides consistent error responses across all API routes
+- Makes error handling more predictable for frontend code
+- Type safety helps prevent errors during development
+Implications:
+- All API routes should use the error handling utilities
+- Frontend code can rely on consistent error structure
+```
+
+```
+Decision: Environment Variable Validation
+Problem: Need to ensure all required environment variables are present and valid
+Options:
+- Manual validation in application code
+- Simple existence checks
+- Schema-based validation with Zod
+Decision: Implemented Zod schema validation for environment variables
+Rationale:
+- Provides type safety and runtime validation
+- Clear error messages when configuration is missing or invalid
+- Separates validation concerns from application logic
+Implications:
+- All environment access should go through the validated config
+- Makes configuration requirements explicit and self-documenting
+```
+
+```
+Decision: URL Structure and Folder Organization
+Problem: The project had an inconsistency between URL structure in documentation and actual implementation
+Options:
+- Continue using the app/(poc) route group (URLs like /auth-test)
+- Follow the documentation and use app/poc/* (URLs like /poc/auth-test)
+- Introduce a new structure entirely
+Decision: Standardized on app/poc/* to follow documentation specification
+Rationale:
+- Aligns implementation with documented URL pattern (/poc/*)
+- Creates consistency between documentation and code
+- Follows Next.js routing conventions more clearly
+Implications:
+- Provides clearer understanding of URL structure
+- Makes it easier to navigate the codebase by having consistent naming
+- Avoids confusion for future developers
+```
+
+```
+Decision: Directory Structure and API Route Patterns Alignment
+Problem: Project structure didn't fully align with the documented folder structure and API route patterns
+Options:
+- Keep the existing structure with d365Client in lib/ and API under /api/core/dataverse
+- Reorganize to match documentation with d365Client in lib/clients/ and API under /api/dataverse
+- Create a hybrid approach with partial reorganization
+Decision: Fully align with documented structure
+Rationale:
+- Creates consistency between documentation and implementation
+- Follows established naming conventions and directory structure
+- Improves maintainability by making the codebase predictable
+- Adheres to the guiding principles of clarity and maintainability
+Implications:
+- Requires updating imports across the codebase
+- May initially break existing routes if not all references are updated
+- Establishes a pattern for future code organization
+```
+
+```
+Decision: POC Directory Naming Standardization
+Problem: POC directory names in app/poc/* had inconsistent naming patterns (auth-test, bff-test, styling-test)
+Options:
+- Keep existing inconsistent naming (auth-test, bff-test, styling-test)
+- Standardize on cleaner names without the "-test" suffix (auth, bff, ui)
+- Adopt a completely different naming convention
+Decision: Standardize on cleaner POC names without the "-test" suffix
+Rationale:
+- Creates consistency with documentation which references /poc/auth, /poc/ui, etc.
+- Makes URLs cleaner and more professional (e.g., /poc/ui instead of /poc/styling-test)
+- Establishes a consistent pattern for future POCs (state, leads)
+- Better represents the purpose of each POC as a concept demonstration, not just a test
+Implications:
+- Required updating references in navigation and documentation
+- Simplified the URL structure for better usability
+- Helps clarify that these are proper Proof-of-Concept modules, not just test pages
+```
 
 ## Technical Debt Tracking
 
@@ -271,35 +388,61 @@ Production approach: Implement configurable filters based on tenant settings and
 Priority: High
 ```
 
+### Current Technical Debt
+
+```
+Item: In-memory token caching
+Description: Core Infrastructure POC uses simple in-memory caching for Dataverse tokens
+Why it's debt: In-memory caching doesn't persist across serverless function invocations
+Production approach: Replace with Redis cache or Azure Key Vault for token storage
+Priority: Medium
+```
+
+```
+Item: Limited error reporting
+Description: Errors are logged to console but not captured in a monitoring system
+Why it's debt: Makes it difficult to track and respond to production issues
+Production approach: Integrate with application monitoring service (e.g., Application Insights)
+Priority: Medium
+```
+
+```
+Item: Missing comprehensive test coverage
+Description: POCs have minimal or no automated tests
+Why it's debt: Increases risk of regressions and makes changes more difficult
+Production approach: Implement comprehensive test suite with Jest and React Testing Library
+Priority: High
+```
+
 ## Next Steps
 
 ### Immediate Action Items
 
-1. **Complete Core Infrastructure POC**:
-   - Implement the d365Client.ts class with proper token management
-   - Move token caching logic from API route to client
-   - Create centralized error handling utilities
-   - Set up environment variable validation
-   - Complete the BFF test page to demonstrate working integration
+1. **Complete Authentication & Authorization POC**:
+   - Implement protected routes with middleware
+   - Add role-based access control (RBAC) demonstration
+   - Set up proper auth state persistence
+   - Add CSRF protection
+   - Complete the auth POC page with working authentication flows
 
-2. **Enhance Authentication POC**:
-   - Complete the auth-test page with working authentication flows
-   - Add protected route examples
-   - Implement basic role-based access control (RBAC)
-   - Document integration points with other POCs
-
-3. **Develop UI Framework and Design System POC**:
-   - Expand on existing styling-test with theming capabilities
+2. **Develop UI Framework and Design System POC**:
+   - Expand on existing UI POC with theming capabilities
    - Create layout components with responsive design
    - Build form component library with validation
    - Document component usage and integration patterns
+
+3. **Implement State Management POC**:
+   - Configure Zustand store for global state management
+   - Set up TanStack Query client with caching strategies
+   - Create data validation layer with Zod
+   - Demonstrate optimistic updates pattern
 
 4. **Integrate Documentation Across POCs**:
    - Create a README for each POC with integration instructions
    - Define shared interfaces and patterns between POCs
    - Document environment setup requirements for each POC
 
-Start with the Core Infrastructure items as they form the foundation for all other POCs. Then proceed to Authentication & Authorization to ensure secure access patterns are established before implementing business functionality.
+Start with the Authentication & Authorization POC as it builds on the Core Infrastructure and is critical for security.
 
 ---
 

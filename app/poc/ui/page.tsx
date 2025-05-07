@@ -4,10 +4,11 @@ import { Input } from '@/components/ui/input';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
-export default function StylingTestPage() {
+export default function UiPocPage() {
   return (
     <div className="p-4 space-y-4">
-      <h1 className="text-2xl font-bold">Styling Test Page (shadcn/ui)</h1>
+      <h1 className="text-2xl font-bold">UI Framework & Design System POC</h1>
+      <p className="text-gray-600 mb-4">This POC demonstrates the UI component library using shadcn/ui and Tailwind CSS.</p>
 
       <Card>
         <CardHeader>

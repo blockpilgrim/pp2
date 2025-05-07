@@ -1,12 +1,11 @@
-// Example for app/(poc)/auth-test/page.tsx
 import React from 'react';
 // You might want to add components here later to test login/logout
 
-export default function AuthTestPage() {
+export default function AuthPocPage() {
   return (
     <div>
-      <h1>Authentication Test Page</h1>
-      <p>Add components here to test Azure AD Sign In/Out.</p>
+      <h1>Authentication & Authorization POC</h1>
+      <p>This POC demonstrates authentication flows using Auth.js with Microsoft Entra ID.</p>
       {/* Example: Add a sign-in/sign-out button later */}
     </div>
   );
