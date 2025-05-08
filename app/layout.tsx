@@ -20,7 +20,11 @@ export const metadata: Metadata = {
 
 function Providers({ children }: { children: React.ReactNode }) {
   'use client'
-  return <SessionProvider>{children}</SessionProvider>
+  return (
+    <SessionProvider refetchInterval={5 * 60} refetchOnWindowFocus={true}>
+      {children}
+    </SessionProvider>
+  )
 }
 
 export default function RootLayout({
@@ -32,6 +36,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        suppressHydrationWarning
       >
         <Providers>
           {children}

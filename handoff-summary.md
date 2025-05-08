@@ -49,13 +49,13 @@ This checklist represents features organized by POC module, with each module foc
 
 **POC Goal**: Create a robust foundation for secure API communication that demonstrates clean separation of concerns and proper error handling.
 
-### 🔒 Authentication & Authorization POC
-- [ ] Complete user authentication flow with session management
-- [ ] Implement protected routes with middleware
-- [ ] Add role-based access control (RBAC) demonstration
-- [ ] Set up proper auth state persistence
-- [ ] Add CSRF protection
-- [ ] Create working demo at `/poc/auth` showing complete authentication flow
+### ✅ Authentication & Authorization POC (Completed)
+- [x] Complete user authentication flow with session management
+- [x] Implement protected routes with middleware
+- [x] Add role-based access control (RBAC) demonstration
+- [x] Set up proper auth state persistence
+- [x] Add CSRF protection
+- [x] Create working demo at `/poc/auth` showing complete authentication flow
 
 **POC Goal**: Demonstrate secure authentication patterns and role-based access control that can be integrated into any part of the application.
 
@@ -263,6 +263,26 @@ Implications:
 ```
 
 ```
+Decision: Authentication Flow and Session Management
+Problem: Need a secure and user-friendly authentication approach for the Partner Portal
+Options:
+- Simple JWT-based authentication with basic session management
+- Enhanced authentication with role-based access controls and middleware protection
+- Third-party identity provider integration with full session management
+Decision: Implemented comprehensive Auth.js (NextAuth v5) solution with Microsoft Entra ID and role-based access control
+Rationale:
+- Provides enterprise-grade security with Microsoft Entra ID integration
+- Implements robust RBAC model that can be extended as the application grows
+- Uses middleware for route protection, offering both security and flexibility
+- Creates reusable patterns for auth-related UI components
+- Implements session monitoring and token refresh capabilities
+Implications:
+- Requires proper configuration of Microsoft Entra ID in all environments
+- Authentication flow must be carefully managed to prevent issues across environments
+- Role assignments will need to be sourced from an external system in production
+```
+
+```
 Decision: Token Caching Strategy for Core Infrastructure POC
 Problem: Need an efficient way to cache Dataverse API tokens to reduce authentication overhead
 Options:
@@ -399,6 +419,14 @@ Priority: Medium
 ```
 
 ```
+Item: Manual role assignment in auth flow
+Description: Authentication POC assigns roles based on email domains in the JWT callback
+Why it's debt: In a production environment, roles should come from the identity provider or a database
+Production approach: Integrate with Microsoft Entra ID claims or implement a database-backed role system
+Priority: Medium
+```
+
+```
 Item: Limited error reporting
 Description: Errors are logged to console but not captured in a monitoring system
 Why it's debt: Makes it difficult to track and respond to production issues
@@ -418,12 +446,12 @@ Priority: High
 
 ### Immediate Action Items
 
-1. **Complete Authentication & Authorization POC**:
-   - Implement protected routes with middleware
-   - Add role-based access control (RBAC) demonstration
-   - Set up proper auth state persistence
-   - Add CSRF protection
-   - Complete the auth POC page with working authentication flows
+1. ✅ **Complete Authentication & Authorization POC** (Completed):
+   - ✅ Implement protected routes with middleware
+   - ✅ Add role-based access control (RBAC) demonstration
+   - ✅ Set up proper auth state persistence
+   - ✅ Add CSRF protection
+   - ✅ Complete the auth POC page with working authentication flows
 
 2. **Develop UI Framework and Design System POC**:
    - Expand on existing UI POC with theming capabilities
