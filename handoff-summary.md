@@ -150,7 +150,7 @@ To ensure consistency across POCs and facilitate future integration, we'll follo
 
 #### URL/Route Structure
 - POC demonstration pages: `/poc/{poc-name}` (e.g., `/poc/auth`, `/poc/ui`, `/poc/state`, `/poc/core`)
-- API routes: `/api/{domain}/{action}` (e.g., `/api/leads/list`, `/api/auth/roles`)
+- API routes: `/api/{domain}` with HTTP methods (e.g., `GET /api/leads` to list leads, `POST /api/leads` to create)
 
 #### Folder Structure
 - `lib/`: Shared utilities and clients
@@ -350,6 +350,14 @@ Implications:
 - Provides clearer understanding of URL structure
 - Makes it easier to navigate the codebase by having consistent naming
 - Avoids confusion for future developers
+Rationale:
+- Aligns implementation with documented URL pattern (/poc/*)
+- Creates consistency between documentation and code
+- Follows Next.js routing conventions more clearly
+Implications:
+- Provides clearer understanding of URL structure
+- Makes it easier to navigate the codebase by having consistent naming
+- Avoids confusion for future developers
 ```
 
 ```
@@ -388,6 +396,27 @@ Implications:
 - Required updating references in navigation and documentation
 - Simplified the URL structure for better usability
 - Helps clarify that these are proper Proof-of-Concept modules, not just test pages
+```
+
+```
+Decision: API URL Pattern Standardization
+Problem: The handoff documentation suggests `/api/{domain}/{action}` URLs (e.g., `/api/leads/list`), but the implementation uses RESTful `/api/{domain}` with HTTP methods
+Options:
+- Switch to action-based URLs as documented (`/api/leads/list`, `/api/leads/create`)
+- Maintain RESTful resource-based approach (`/api/leads` with GET, POST, PATCH)
+- Implement hybrid approach with both patterns
+Decision: Standardize on RESTful resource-based API URLs with HTTP methods
+Rationale:
+- Aligns with modern REST API best practices
+- Improves developer experience through familiar patterns
+- Works seamlessly with Next.js API route handlers
+- Enables cleaner code organization by grouping related operations
+- Follows guiding principles of clarity, maintainability, and modern best practices
+Implications:
+- Slight deviation from initial documentation, but more aligned with industry standards
+- Increased consistency and maintainability across API endpoints
+- Better adherence to the Backend-for-Frontend (BFF) pattern as specified in architecture
+- Requires clear documentation of the API design pattern for developers
 ```
 
 ## Technical Debt Tracking
