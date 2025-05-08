@@ -49,6 +49,30 @@ Production approach: Implement configurable filters based on tenant settings and
 Priority: High
 ```
 
+```
+Item: UI component dependency management
+Description: UI components from shadcn/ui and their Radix UI dependencies are manually installed as needed
+Why it's debt: Error-prone process that can lead to missing dependencies and broken components
+Production approach: Create a component installation script or use a more comprehensive dependency management approach
+Priority: Medium
+```
+
+```
+Item: Duplicate React keys in navigation component
+Description: Console warnings about duplicate keys in the POC navigation component
+Why it's debt: Can cause rendering issues and inefficiencies in React's reconciliation process
+Production approach: Refactor navigation component to ensure unique keys for all rendered elements
+Priority: Low
+```
+
+```
+Item: Dark mode styling inconsistencies
+Description: Some UI elements don't fully respect dark mode theming
+Why it's debt: Creates an inconsistent user experience when using dark mode
+Production approach: Audit all components in dark mode and ensure consistent styling
+Priority: Low
+```
+
 ## Adding New Technical Debt Items
 
 To add a new technical debt item to this log, follow this template:
