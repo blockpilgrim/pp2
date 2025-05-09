@@ -1,5 +1,5 @@
 import { d365Client } from "@/lib/clients/d365Client"; // Your D365 client
-import { UserRole } from "@/lib/auth"; // Assuming UserRole is exported from lib/auth.ts or a central types file
+import { UserRole } from "@/lib/auth"; // Assuming UserRole is exported from lib/auth.ts
 
 export interface AppContactProfile {
   contactId: string;
@@ -12,6 +12,9 @@ export interface AppContactProfile {
 }
 
 export class D365ContactService {
+  private static readonly AAD_OBJECT_ID_FIELD = process.env.DATAVERSE_CONTACT_AAD_OBJECT_ID_FIELD;
+  private static readonly APP_ROLES_FIELD = process.env.DATAVERSE_CONTACT_APP_ROLES_FIELD;
+
   /**
    * Fetches a Contact from D365 based on Azure AD Object ID.
    * 
@@ -19,16 +22,34 @@ export class D365ContactService {
    * @returns A promise that resolves to an AppContactProfile or null if not found.
    */
   static async getContactByAzureADObjectId(azureAdObjectId: string): Promise<AppContactProfile | null> {
-    console.log(`D365ContactService: Attempting to fetch contact for Azure AD OID: ${azureAdObjectId}`);
+    if (!this.AAD_OBJECT_ID_FIELD || !this.APP_ROLES_FIELD) {
+      console.error("D365ContactService: Environment variables for D365 field names (DATAVERSE_CONTACT_AAD_OBJECT_ID_FIELD, DATAVERSE_CONTACT_APP_ROLES_FIELD) are not configured.");
+      // Potentially throw an error or return null, depending on desired strictness
+      // For now, returning null to allow auth flow to assign default roles if this is misconfigured.
+      return null;
+    }
+
+    console.log(`D365ContactService: Attempting to fetch contact for Azure AD OID: ${azureAdObjectId} using AAD field '${this.AAD_OBJECT_ID_FIELD}' and roles field '${this.APP_ROLES_FIELD}'`);
+    
     try {
-      // This is a placeholder for your actual Dataverse query.
-      // You need to have a custom field on your Contact entity in Dataverse
-      // that stores the Azure AD Object ID. Let's assume its logical name is 'crXXX_azureadobjectid'.
-      // Adjust 'select' to include all fields you need, especially the field storing roles.
-      // Let's assume roles are stored in a field named 'crXXX_approles'.
-      const contacts = await d365Client.getContacts({ // Ensure d365Client has a method like getContacts
-        select: ["contactid", "firstname", "lastname", "emailaddress1", "crXXX_approles"],
-        filters: [`crXXX_azureadobjectid eq '${azureAdObjectId}'`], // Query by the Azure AD Object ID
+      const selectFields = [
+        "contactid", 
+        "firstname", 
+        "lastname", 
+        "emailaddress1", 
+        this.APP_ROLES_FIELD // Dynamically include the roles field
+      ];
+      
+      // Ensure AAD_OBJECT_ID_FIELD is part of select if it's not implicitly returned or needed for other reasons.
+      // Typically, it's used in the filter, not necessarily in the select if you already have the value.
+      // However, if your d365Client.getContacts requires it or if you want to verify it, add it:
+      // if (!selectFields.includes(this.AAD_OBJECT_ID_FIELD)) {
+      //   selectFields.push(this.AAD_OBJECT_ID_FIELD);
+      // }
+
+      const contacts = await d365Client.getContacts({
+        select: selectFields,
+        filter: `${this.AAD_OBJECT_ID_FIELD} eq '${azureAdObjectId}'`, // Corrected from 'filters' to 'filter'
         top: 1, // We expect at most one contact
       });
 
@@ -39,7 +60,7 @@ export class D365ContactService {
           firstName: d365Contact.firstname,
           lastName: d365Contact.lastname,
           email: d365Contact.emailaddress1, // Or another email field as appropriate
-          roles: this.mapD365RolesToAppRoles(d365Contact.crXXX_approles),
+          roles: this.mapD365RolesToAppRoles(d365Contact[this.APP_ROLES_FIELD]), // Access roles field dynamically
           // Map other fields from d365Contact to appProfile as needed
         };
         console.log(`D365ContactService: Found contact profile for AAD OID ${azureAdObjectId}:`, appProfile);
@@ -51,7 +72,7 @@ export class D365ContactService {
     } catch (error) {
       console.error(`D365ContactService: Error fetching D365 Contact by Azure AD Object ID ${azureAdObjectId}:`, error);
       // Depending on your error handling strategy, you might throw a custom error
-      // or return null to indicate failure.
+      // or return null to indicate failure. The auth callback will handle null.
       return null;
     }
   }
@@ -74,23 +95,25 @@ export class D365ContactService {
         if (Object.values(UserRole).includes(roleStr as UserRole)) {
           mappedRoles.push(roleStr as UserRole);
         } else {
-          console.warn(`D365ContactService: Unknown role string '${roleStr}' encountered.`);
+          console.warn(`D365ContactService: Unknown role string '${roleStr}' encountered from D365 field '${this.APP_ROLES_FIELD}'.`);
         }
       }
     }
+    // Add other mapping logic here if roles are stored differently (e.g., OptionSet values, N:N related entities)
     // Example: If roles are stored as an array of numbers (OptionSet values)
-    // else if (Array.isArray(d365RolesField)) {
+    // else if (Array.isArray(d365RolesField)) { // Assuming d365RolesField is an array of option set values
     //   d365RolesField.forEach(roleValue => {
-    //     if (roleValue === 100000000) mappedRoles.push(UserRole.ADMIN); // Example mapping
-    //     if (roleValue === 100000001) mappedRoles.push(UserRole.PARTNER);
+    //     if (roleValue === 100000000) mappedRoles.push(UserRole.ADMIN); // Example mapping for OptionSet value for Admin
+    //     if (roleValue === 100000001) mappedRoles.push(UserRole.PARTNER); // Example mapping for OptionSet value for Partner
+    //     // ... etc.
     //   });
     // }
 
-    // If no roles are mapped, or if the field is empty, assign a default role.
+    // If no roles are mapped, or if the field is empty/invalid, assign a default role.
     // This ensures every user has at least a basic role.
     if (mappedRoles.length === 0) {
       mappedRoles.push(UserRole.USER);
-      console.log(`D365ContactService: No specific roles found or mapped, assigning default role: ${UserRole.USER}`);
+      console.log(`D365ContactService: No specific roles found or mapped from D365 field '${this.APP_ROLES_FIELD}', assigning default role: ${UserRole.USER}`);
     }
     
     return mappedRoles;
@@ -114,7 +137,7 @@ export class D365ContactService {
       // ... map other updatable fields
 
       // await d365Client.updateRecord("contacts", contactId, d365UpdateData);
-      console.warn("D365ContactService.updateContactProfile is a placeholder and not yet implemented.");
+      console.warn("D365ContactService.updateContactProfile is a placeholder and not yet implemented. Needs actual D365 client call.");
       return true; // Placeholder success
     } catch (error) {
       console.error(`D365ContactService: Error updating D365 Contact profile ${contactId}:`, error);
