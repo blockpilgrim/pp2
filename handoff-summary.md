@@ -39,7 +39,7 @@ This checklist represents features organized by POC module, with each module foc
 - [x] Initial API route for Dataverse integration
 - [x] Basic UI components with shadcn/ui and Tailwind
 
-### ✅ Core Infrastructure POC
+### ✅ Core Infrastructure POC (Completed)
 - [x] Complete Dataverse client implementation
 - [x] Set up proper environment variable configuration
 - [x] Implement token management and caching strategy
@@ -72,12 +72,12 @@ This checklist represents features organized by POC module, with each module foc
 
 **POC Goal**: Build a comprehensive UI toolkit that demonstrates consistent design patterns and responsive components, specifically highlighting the integration and customization of shadcn/ui with Tailwind CSS.
 
-### 🔌 Backend-for-Frontend (BFF) Pattern POC
-- [ ] Implement secure API endpoints following the BFF pattern
-- [ ] Create examples of different API request types (GET, POST, PATCH)
-- [ ] Demonstrate proper error handling and validation
-- [ ] Implement authentication and authorization checks
-- [ ] Build working demo at `/poc/bff` showing API interactions
+### ✅ Backend-for-Frontend (BFF) Pattern POC (Completed)
+- [x] Implement secure API endpoints following the BFF pattern (See `/api/bff-poc/items`)
+- [x] Create examples of different API request types (GET, POST, PATCH) (Implemented in `/api/bff-poc/items/route.ts`)
+- [x] Demonstrate proper error handling and validation (Basic error handling and type checks in API routes)
+- [x] Implement authentication and authorization checks (Auth.js session checks in API routes)
+- [x] Build working demo at `/poc/bff` showing API interactions (Client-side UI at `/poc/bff` interacts with API)
 
 **POC Goal**: Demonstrate the Backend-for-Frontend architectural pattern using Next.js API routes to create a secure communication layer between the frontend and backend services.
 
@@ -152,7 +152,7 @@ This approach enables targeted demonstrations while maintaining a clear path to 
 To ensure consistency across POCs and facilitate future integration, we'll follow these conventions:
 
 #### URL/Route Structure
-- POC demonstration pages: `/poc/{poc-name}` (e.g., `/poc/auth`, `/poc/ui`, `/poc/state`, `/poc/core`)
+- POC demonstration pages: `/poc/{poc-name}` (e.g., `/poc/auth`, `/poc/ui`, `/poc/state`, `/poc/core`, `/poc/bff`)
 - API routes: `/api/{domain}` with HTTP methods (e.g., `GET /api/leads` to list leads, `POST /api/leads` to create)
 
 #### Folder Structure
@@ -164,17 +164,17 @@ To ensure consistency across POCs and facilitate future integration, we'll follo
   - `lib/config/`: Configuration (e.g., environment variables)
 - `components/`: UI components
   - `components/ui/`: Primitive UI components (from shadcn/ui)
-  - `components/custom/`: Domain-specific components
+  - `components/custom/`: Domain-specific components (e.g., `poc-navigation.tsx`, `ui-poc-sub-navigation.tsx`)
   - `components/layouts/`: Page layouts and containers
 - `app/`: Next.js App Router pages and routes
-  - `app/api/`: API routes using BFF pattern
-  - `app/poc/`: POC demonstration pages
+  - `app/api/`: API routes using BFF pattern (e.g., `app/api/bff-poc/items/route.ts`)
+  - `app/poc/`: POC demonstration pages (e.g., `app/poc/bff/page.tsx`)
 - `styles/`: Global styles and theming
 
 #### Naming Conventions
 - Files: kebab-case for general files (e.g., `error-handler.ts`)
 - Components: PascalCase for component files and functions (e.g., `LeadCard.tsx`)
-- Interfaces: Prefixed with "I" (e.g., `ILead`)
+- Interfaces: Prefixed with "I" (e.g., `ILead`) - *Note: Current BFF POC `Item` interface does not follow this; consider for future.*
 - Types: PascalCase without prefix (e.g., `LeadStatus`)
 - Environment variables: Uppercase with underscores, prefixed by domain (e.g., `AUTH_CLIENT_ID`, `DATAVERSE_URL`)
 
@@ -191,6 +191,12 @@ DATAVERSE_TENANT_ID=your-tenant-id
 AUTH_MICROSOFT_ENTRA_ID_ID=your-client-id
 AUTH_MICROSOFT_ENTRA_ID_SECRET=your-client-secret
 AUTH_MICROSOFT_ENTRA_ID_ISSUER=https://login.microsoftonline.com/your-tenant-id/v2.0
+AUTH_SECRET=generate-a-secure-random-string-at-least-32-chars
+
+# App Configuration
+NEXTAUTH_URL=http://localhost:3000
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+NEXT_PUBLIC_API_URL=http://localhost:3000/api
 ```
 
 The development of each POC will follow this progression:
@@ -232,9 +238,9 @@ These files are separated from the main handoff summary to optimize context wind
 
 ## Current Focus Area
 
-Backend-for-Frontend (BFF) Pattern POC
+State Management & Data Handling POC (Next up after BFF POC completion)
 
-*Last updated: 2025-05-09*
+*Last updated: 2025-05-10* 
 
 ---
 

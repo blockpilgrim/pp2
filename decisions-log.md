@@ -204,6 +204,25 @@ Implications:
 - Establishes a comprehensive approach for the Lead Management Mini-App POC
 ```
 
+```
+Decision: POC Navigation Structure Refinement
+Problem: The main POC navigation component (`PocNavigation`) was becoming cluttered with links to sub-pages of individual POCs (e.g., UI POC's Forms, Tables). This made top-level navigation less clear, and sub-pages within complex POCs lacked dedicated, contextual navigation.
+Options:
+- Option 1: Keep all navigation links (top-level POCs and sub-pages) within the single `PocNavigation` component.
+- Option 2: Implement hierarchical/dropdown menus within `PocNavigation` for POCs with sub-pages.
+- Option 3: Refine `PocNavigation` to only include top-level POCs and introduce separate sub-navigation components for individual POCs with multiple sections (e.g., for UI POC).
+Decision: Implemented Option 3. Refined `PocNavigation` to link only to major POC modules (`/poc/core`, `/poc/auth`, `/poc/ui`, `/poc/bff`). Created a new `UiPocSubNavigation` component for UI POC sub-pages (`/poc/ui`, `/poc/ui/forms`, `/poc/ui/tables`, `/poc/ui/data-display`) and integrated it into the `app/poc/ui/layout.tsx`.
+Rationale:
+- Clarity & Simplicity: Keeps the main `PocNavigation` clean and focused on high-level POC modules.
+- Contextual Navigation: Provides clear, dedicated navigation within complex POCs like the UI POC, improving user experience.
+- Maintainability & Scalability: Establishes a modular pattern for handling navigation in POCs that might grow to have multiple sub-sections.
+- Adherence to Guiding Principles: Aligns with principles of Clarity, Simplicity, and Maintainability.
+Implications:
+- Establishes a pattern that can be replicated for other POCs if they develop multiple sub-pages.
+- Requires maintaining the `PocNavigation` for top-level navigation and specific sub-navigation components (like `UiPocSubNavigation`) as needed.
+- The layout file for POCs with sub-navigation (e.g., `app/poc/ui/layout.tsx`) becomes responsible for rendering the relevant sub-navigation component.
+```
+
 ## Adding New Decisions
 
 To add a new decision to this log, follow this template:
