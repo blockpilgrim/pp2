@@ -54,6 +54,7 @@ export class D365Client {
   private tenantId: string;
   private cachedToken: CachedToken | null = null;
   private instanceId: number;
+  private isClientSideInstance: boolean;
 
   constructor(config?: {
     dataverseUrl?: string;
@@ -62,7 +63,24 @@ export class D365Client {
     tenantId?: string;
   }) {
     this.instanceId = ++instanceCounter;
-    console.log(`D365Client[${this.instanceId}]: Initializing...`);
+    this.isClientSideInstance = typeof window !== 'undefined';
+
+    console.log(`D365Client[${this.instanceId}]: Initializing... (Client-side: ${this.isClientSideInstance})`);
+
+    if (this.isClientSideInstance) {
+      console.warn(
+        `D365Client[${this.instanceId}]: Initialized on client-side. This instance is NOT functional for Dataverse operations as server environment variables are unavailable. This usually indicates an incorrect import of server-side code into a client component.`
+      );
+      // Assign placeholder values for client-side instance to prevent crashes if properties are accessed
+      this.dataverseUrl = "CLIENT_INIT_PLACEHOLDER_URL";
+      this.clientId = "CLIENT_INIT_PLACEHOLDER_ID";
+      this.clientSecret = "CLIENT_INIT_PLACEHOLDER_SECRET";
+      this.tenantId = "CLIENT_INIT_PLACEHOLDER_TENANT";
+      // Do not proceed with server-specific validation or config loading
+      return;
+    }
+
+    // Server-side initialization path
     // Try to load from environment if not provided
     const envConfig = this.validateEnvConfig();
 
@@ -70,15 +88,16 @@ export class D365Client {
     this.clientId = config?.clientId || envConfig.DATAVERSE_CLIENT_ID;
     this.clientSecret = config?.clientSecret || envConfig.DATAVERSE_CLIENT_SECRET;
     this.tenantId = config?.tenantId || envConfig.DATAVERSE_TENANT_ID;
-    console.log(`D365Client[${this.instanceId}]: Initialized successfully.`);
+    console.log(`D365Client[${this.instanceId}]: Initialized successfully on server.`);
   }
 
   /**
    * Validates environment variables using Zod
    */
   private validateEnvConfig() {
+    // This method should only be called on the server-side.
+    // The constructor already guards against client-side execution.
     try {
-      // Log the environment variables as seen by process.env for diagnostics
       console.log(`D365Client[${this.instanceId}]: Validating Dataverse environment configuration...`);
       console.log(`D365Client[${this.instanceId}]: process.env.DATAVERSE_URL = "${process.env.DATAVERSE_URL}"`);
       console.log(`D365Client[${this.instanceId}]: process.env.DATAVERSE_CLIENT_ID = "${process.env.DATAVERSE_CLIENT_ID}"`);
@@ -120,6 +139,12 @@ export class D365Client {
    * Gets an access token for Dataverse API, using cache if available
    */
   async getAccessToken(): Promise<string> {
+    if (this.isClientSideInstance) {
+      const errorMsg = `D365Client[${this.instanceId}]: Attempted to call getAccessToken() on a client-side instance. This is not allowed.`;
+      console.error(errorMsg);
+      throw new DataverseError(errorMsg, DataverseErrorType.CONFIGURATION);
+    }
+
     console.log(`D365Client[${this.instanceId}]: Attempting to get access token...`);
     const nowInSeconds = Math.floor(Date.now() / 1000);
 
@@ -187,6 +212,12 @@ export class D365Client {
       body?: any;
     } = {}
   ): Promise<T> {
+    if (this.isClientSideInstance) {
+      const errorMsg = `D365Client[${this.instanceId}]: Attempted to call request() on a client-side instance. This is not allowed.`;
+      console.error(errorMsg);
+      throw new DataverseError(errorMsg, DataverseErrorType.CONFIGURATION);
+    }
+
     const requestMethod = options.method || 'GET';
     console.log(`D365Client[${this.instanceId}]: Making ${requestMethod} request to endpoint: ${endpoint}`);
     try {
