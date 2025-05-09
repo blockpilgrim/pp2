@@ -14,6 +14,7 @@ const uiPocNavItems: NavItem[] = [
   { name: "Overview", href: "/poc/ui" },
   { name: "Forms", href: "/poc/ui/forms" },
   { name: "Tables", href: "/poc/ui/tables" },
+  { name: "Data Display", href: "/poc/ui/data-display" }, // Added Data Display link
   // Add other UI POC sub-pages here as they are created
 ];
 
