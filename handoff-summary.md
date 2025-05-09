@@ -24,7 +24,7 @@ The Partner Lead Management Portal V2.0 aims to replace the previous Power Pages
 - **Framework**: Next.js App Router with React Server Components and Client Components
 - **Styling**: Tailwind CSS with shadcn/ui components
 - **State Management**: Zustand for global state, React Hook Form for forms
-- **Authentication**: Auth.js (NextAuth v5) with Azure AD
+- **Authentication**: Auth.js (NextAuth v5) with Azure AD, leveraging Dynamics 365 for user profile and roles.
 - **Backend Integration**: Backend-for-Frontend pattern via Next.js API Routes
 - **Data Handling**: TanStack Query (React Query v5) for data fetching and caching
 - **Hosting**: Azure Static Web Apps with CI/CD via Azure DevOps
@@ -40,24 +40,39 @@ This checklist represents features organized by POC module, with each module foc
 - [x] Basic UI components with shadcn/ui and Tailwind
 
 ### ✅ Core Infrastructure POC (Completed)
-- [x] Complete Dataverse client implementation
-- [x] Set up proper environment variable configuration
-- [x] Implement token management and caching strategy
-- [x] Create centralized error handling utilities
-- [x] Add comprehensive API error responses
+- [x] Complete Dataverse client implementation (`lib/clients/d365Client.ts`)
+- [x] Set up proper environment variable configuration (including D365 connection details)
+- [x] Implement token management and caching strategy (within `d365Client.ts`)
+- [x] Create centralized error handling utilities (`lib/utils/error-handler.ts`, `DataverseError` in `d365Client.ts`)
+- [x] Add comprehensive API error responses (demonstrated in `d365Client.ts`)
 - [x] Build working demo at `/poc/core` demonstrating data integration
 
 **POC Goal**: Create a robust foundation for secure API communication that demonstrates clean separation of concerns and proper error handling.
 
-### ✅ Authentication & Authorization POC (Completed)
-- [x] Complete user authentication flow with session management
+### 🔄 Authentication & Authorization POC (Refinement In Progress)
+- [x] Complete user authentication flow with session management via Azure AD
 - [x] Implement protected routes with middleware
-- [x] Add role-based access control (RBAC) demonstration
+- [x] Add role-based access control (RBAC) demonstration (initial setup)
 - [x] Set up proper auth state persistence
 - [x] Add CSRF protection
-- [x] Create working demo at `/poc/auth` showing complete authentication flow
+- [x] **Strategy Defined:** Azure AD for auth, Dynamics 365 for user profile & roles.
+- [x] **`D365ContactService` Created:** (`lib/services/d365ContactService.ts`) for D365 interactions.
+- [x] **`Auth.js` Callbacks Updated:** `jwt` and `session` in `lib/auth.ts` integrate D365 data.
+- [x] **TypeScript Types Augmented:** `Session` and `JWT` in `lib/auth.ts` include D365 fields.
+- [x] **Environment Variables Configured:** `.env.example` updated for D365 field names (`DATAVERSE_CONTACT_AAD_OBJECT_ID_FIELD`, `DATAVERSE_CONTACT_APP_ROLES_FIELD`).
+- [x] **D365 Field Name Usage:** `D365ContactService` uses environment variables for field names.
+- [x] **UI Updated:** `poc-navigation.tsx` displays D365 user status and session errors.
+- [ ] **Adapt `mapD365RolesToAppRoles` (CRITICAL):** Logic in `D365ContactService` must be updated to correctly parse roles based on D365 storage format (e.g., OptionSet, Choices). Examples provided.
+- [ ] **Thorough Testing (End-to-End):**
+    - [ ] User exists in Azure AD and D365 (with roles correctly mapped).
+    - [ ] User exists in Azure AD but not in D365 (or not linked).
+    - [ ] Various D365 role configurations and error scenarios (e.g., API errors, malformed role data).
+- [ ] Update UI components further to display D365-sourced profile information (e.g., on a dedicated profile page).
+- [ ] Adapt UI/UX based on `isD365User` status more broadly.
+- [ ] Refine error handling in auth flow for D365 integration issues (e.g., user-facing messages for `D365LookupFailed`).
+- [ ] Implement `updateContactProfile` in `D365ContactService` with actual D365 client call and test profile updates from the portal.
 
-**POC Goal**: Demonstrate secure authentication patterns and role-based access control that can be integrated into any part of the application.
+**POC Goal**: Demonstrate secure authentication patterns using Azure AD, with user profile details and application-specific roles managed in Dynamics 365, and role-based access control integrated throughout the application.
 
 ### ✅ UI Framework & Design System POC (Completed)
 - [x] Implement brand theming with Tailwind configuration (colors, spacing, typography)
@@ -133,7 +148,7 @@ After careful consideration, we've decided to pursue focused Proof-of-Concept (P
 Each POC will be developed as a standalone module with clear integration points and documentation:
 
 1. **Core Infrastructure POC**: Dataverse client, token management, error handling
-2. **Authentication POC**: Complete auth flows, RBAC implementation
+2. **Authentication POC**: Complete auth flows, RBAC implementation (D365 integration)
 3. **UI Framework POC**: Component system, theming, layouts
 4. **Backend-for-Frontend (BFF) POC**: API endpoints, request/response handling
 5. **State Management POC**: Global state, data fetching, caching
@@ -158,6 +173,7 @@ To ensure consistency across POCs and facilitate future integration, we'll follo
 #### Folder Structure
 - `lib/`: Shared utilities and clients
   - `lib/clients/`: API clients (e.g., d365Client.ts)
+  - `lib/services/`: Service classes abstracting business logic (e.g., `d365ContactService.ts`)
   - `lib/utils/`: Helper functions
   - `lib/hooks/`: Custom React hooks
   - `lib/types/`: TypeScript interfaces and types
@@ -172,10 +188,10 @@ To ensure consistency across POCs and facilitate future integration, we'll follo
 - `styles/`: Global styles and theming
 
 #### Naming Conventions
-- Files: kebab-case for general files (e.g., `error-handler.ts`)
+- Files: kebab-case for general files (e.g., `error-handler.ts`, `d365-contact-service.ts`)
 - Components: PascalCase for component files and functions (e.g., `LeadCard.tsx`)
-- Interfaces: Prefixed with "I" (e.g., `ILead`) - *Note: Current BFF POC `Item` interface does not follow this; consider for future.*
-- Types: PascalCase without prefix (e.g., `LeadStatus`)
+- Interfaces: Prefixed with "I" (e.g., `ILead`) - *Note: Current BFF POC `Item` interface does not follow this; `AppContactProfile` in `d365ContactService.ts` also does not. Consider for future consistency.*
+- Types: PascalCase without prefix (e.g., `LeadStatus`, `UserRole`)
 - Environment variables: Uppercase with underscores, prefixed by domain (e.g., `AUTH_CLIENT_ID`, `DATAVERSE_URL`)
 
 #### Environment Variables
@@ -186,6 +202,10 @@ DATAVERSE_URL=https://yourtenant.crm.dynamics.com
 DATAVERSE_CLIENT_ID=your-client-id
 DATAVERSE_CLIENT_SECRET=your-client-secret
 DATAVERSE_TENANT_ID=your-tenant-id
+# Field in D365 Contact entity storing Azure AD Object ID (e.g., crXXX_azureadobjectid)
+DATAVERSE_CONTACT_AAD_OBJECT_ID_FIELD=yourprefix_azureadobjectidfield
+# Field in D365 Contact entity storing application roles (e.g., crXXX_approles, comma-separated string)
+DATAVERSE_CONTACT_APP_ROLES_FIELD=yourprefix_applicationrolesfield
 
 # Authentication
 AUTH_MICROSOFT_ENTRA_ID_ID=your-client-id
@@ -238,7 +258,40 @@ These files are separated from the main handoff summary to optimize context wind
 
 ## Current Focus Area
 
-Refinements to current app and completed POCs.
+**Finalizing and Testing Dynamics 365 Integration for Authentication & Authorization POC.**
+
+The current effort involves completing the integration of Dynamics 365 (D365) as the source of truth for user profile information and application-specific roles. Azure Active Directory (Azure AD) remains the primary authentication provider.
+
+**Implementation Plan & Progress:**
+
+1.  **Strategy Definition (Completed):** Established a hybrid approach: Azure AD for authentication, D365 for user profiles (Contact records) and application roles. `Auth.js` orchestrates this.
+2.  **`D365ContactService` Creation & Configuration (Completed):** Service (`lib/services/d365ContactService.ts`) created and configured to use environment variables for D365 field names.
+3.  **`Auth.js` Callback Modifications (Completed):** `jwt` and `session` callbacks in `lib/auth.ts` updated to fetch and integrate D365 contact data.
+4.  **Type Augmentation (Completed):** TypeScript declarations for `Session` and `JWT` extended.
+5.  **D365 Setup & Environment Configuration (User Confirmed Completed):** Necessary fields in D365 (for AAD Object ID and App Roles) are set up, and local `.env` files are populated with their logical names.
+6.  **UI Updated (Completed):** `poc-navigation.tsx` now displays D365 user status and session errors.
+
+**Next Steps for Auth POC Refinement:**
+
+1.  **Adapt `mapD365RolesToAppRoles` (CRITICAL - User Action Required):**
+    *   The developer must review and modify the `mapD365RolesToAppRoles` method in `lib/services/d365ContactService.ts`.
+    *   The logic needs to accurately parse the role data from the D365 `APP_ROLES_FIELD` based on its actual storage format (e.g., comma-separated string, OptionSet numeric values, Choices array of numbers). Examples for these formats are now provided in the method.
+2.  **Thorough End-to-End Testing:**
+    *   Restart the Next.js application.
+    *   Test Case 1: User in AAD & D365 with correctly mapped roles. Verify `session.user` details.
+    *   Test Case 2: User in AAD, not in D365 (or not linked). Verify default roles and `isD365User: false`.
+    *   Test Case 3: Different D365 role configurations and error/edge cases (e.g., empty roles field, malformed data if applicable).
+    *   Monitor server-side console logs for debugging messages from `D365ContactService` and `lib/auth.ts`.
+3.  **Verify `d365Client` Functionality:**
+    *   Ensure `lib/clients/d365Client.ts` is correctly authenticating and making API requests to Dataverse. This will be implicitly tested during the end-to-end auth flow testing.
+4.  **Implement `updateContactProfile` (Post-Testing):**
+    *   Complete the `updateContactProfile` method in `D365ContactService` by ensuring `d365Client.updateContact` is called correctly.
+    *   Create a basic UI and API route to allow users to update parts of their D365 profile from the portal.
+5.  **UI/UX Enhancements (Post-Testing):**
+    *   Further update UI components to display more D365-sourced profile information (e.g., on a dedicated profile page or dashboard).
+    *   Refine how the application behaves for users with `isD365User: false`.
+6.  **Refine Error Handling (Post-Testing):**
+    *   Implement more user-friendly display of session errors (e.g., using toast notifications for `D365LookupFailed`).
 
 *Last updated: 2025-05-10* 
 

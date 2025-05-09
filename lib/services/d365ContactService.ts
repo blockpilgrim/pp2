@@ -24,8 +24,6 @@ export class D365ContactService {
   static async getContactByAzureADObjectId(azureAdObjectId: string): Promise<AppContactProfile | null> {
     if (!this.AAD_OBJECT_ID_FIELD || !this.APP_ROLES_FIELD) {
       console.error("D365ContactService: Environment variables for D365 field names (DATAVERSE_CONTACT_AAD_OBJECT_ID_FIELD, DATAVERSE_CONTACT_APP_ROLES_FIELD) are not configured.");
-      // Potentially throw an error or return null, depending on desired strictness
-      // For now, returning null to allow auth flow to assign default roles if this is misconfigured.
       return null;
     }
 
@@ -37,31 +35,23 @@ export class D365ContactService {
         "firstname", 
         "lastname", 
         "emailaddress1", 
-        this.APP_ROLES_FIELD // Dynamically include the roles field
+        this.APP_ROLES_FIELD 
       ];
       
-      // Ensure AAD_OBJECT_ID_FIELD is part of select if it's not implicitly returned or needed for other reasons.
-      // Typically, it's used in the filter, not necessarily in the select if you already have the value.
-      // However, if your d365Client.getContacts requires it or if you want to verify it, add it:
-      // if (!selectFields.includes(this.AAD_OBJECT_ID_FIELD)) {
-      //   selectFields.push(this.AAD_OBJECT_ID_FIELD);
-      // }
-
       const contacts = await d365Client.getContacts({
         select: selectFields,
-        filter: `${this.AAD_OBJECT_ID_FIELD} eq '${azureAdObjectId}'`, // Corrected from 'filters' to 'filter'
-        top: 1, // We expect at most one contact
+        filter: `${this.AAD_OBJECT_ID_FIELD} eq '${azureAdObjectId}'`, 
+        top: 1, 
       });
 
       if (contacts && contacts.length > 0) {
         const d365Contact = contacts[0];
         const appProfile: AppContactProfile = {
-          contactId: d365Contact.contactid!, // Assuming contactid is always present
+          contactId: d365Contact.contactid!, 
           firstName: d365Contact.firstname,
           lastName: d365Contact.lastname,
-          email: d365Contact.emailaddress1, // Or another email field as appropriate
-          roles: this.mapD365RolesToAppRoles(d365Contact[this.APP_ROLES_FIELD]), // Access roles field dynamically
-          // Map other fields from d365Contact to appProfile as needed
+          email: d365Contact.emailaddress1, 
+          roles: this.mapD365RolesToAppRoles(d365Contact[this.APP_ROLES_FIELD]), 
         };
         console.log(`D365ContactService: Found contact profile for AAD OID ${azureAdObjectId}:`, appProfile);
         return appProfile;
@@ -71,49 +61,81 @@ export class D365ContactService {
       }
     } catch (error) {
       console.error(`D365ContactService: Error fetching D365 Contact by Azure AD Object ID ${azureAdObjectId}:`, error);
-      // Depending on your error handling strategy, you might throw a custom error
-      // or return null to indicate failure. The auth callback will handle null.
       return null;
     }
   }
 
   /**
    * Maps the role data retrieved from D365 to the application's UserRole enum.
-   * This method needs to be adapted based on how roles are stored in D365
-   * (e.g., comma-separated string, option set values, related entity).
+   * **ACTION REQUIRED: You MUST adapt this method based on how roles are stored in your D365 APP_ROLES_FIELD.**
    * 
-   * @param d365RolesField The raw role data from the D365 Contact record.
+   * @param d365RolesField The raw role data from the D365 Contact record's APP_ROLES_FIELD.
    * @returns An array of UserRole.
    */
   private static mapD365RolesToAppRoles(d365RolesField: any): UserRole[] {
     const mappedRoles: UserRole[] = [];
 
-    // Example: If roles are stored as a comma-separated string (e.g., "admin,partner")
-    if (typeof d365RolesField === 'string' && d365RolesField.trim().length > 0) {
-      const roleStrings = d365RolesField.split(',').map(roleStr => roleStr.trim().toLowerCase());
-      for (const roleStr of roleStrings) {
-        if (Object.values(UserRole).includes(roleStr as UserRole)) {
-          mappedRoles.push(roleStr as UserRole);
-        } else {
-          console.warn(`D365ContactService: Unknown role string '${roleStr}' encountered from D365 field '${this.APP_ROLES_FIELD}'.`);
+    if (!d365RolesField) {
+      console.log(`D365ContactService: Roles field ('${this.APP_ROLES_FIELD}') is empty or null.`);
+      // Fall through to assign default role if no specific roles are found.
+    }
+    // Example 1: Roles are stored as a comma-separated string (e.g., "admin,partner")
+    else if (typeof d365RolesField === 'string') {
+      if (d365RolesField.trim().length > 0) {
+        const roleStrings = d365RolesField.split(',').map(roleStr => roleStr.trim().toLowerCase());
+        for (const roleStr of roleStrings) {
+          if (Object.values(UserRole).includes(roleStr as UserRole)) {
+            mappedRoles.push(roleStr as UserRole);
+          } else {
+            console.warn(`D365ContactService: Unknown role string '${roleStr}' encountered from D365 field '${this.APP_ROLES_FIELD}'.`);
+          }
         }
       }
     }
-    // Add other mapping logic here if roles are stored differently (e.g., OptionSet values, N:N related entities)
-    // Example: If roles are stored as an array of numbers (OptionSet values)
-    // else if (Array.isArray(d365RolesField)) { // Assuming d365RolesField is an array of option set values
+    // Example 2: Roles are stored as a single OptionSet value (Choice) - numeric
+    // else if (typeof d365RolesField === 'number') {
+    //   // Replace these numeric values with the actual OptionSet values from your D365 environment
+    //   const D365_ADMIN_ROLE_VALUE = 100000000; // Example value for Admin
+    //   const D365_PARTNER_ROLE_VALUE = 100000001; // Example value for Partner
+    //   const D365_USER_ROLE_VALUE = 100000002;   // Example value for User
+    //
+    //   if (d365RolesField === D365_ADMIN_ROLE_VALUE) {
+    //     mappedRoles.push(UserRole.ADMIN);
+    //   } else if (d365RolesField === D365_PARTNER_ROLE_VALUE) {
+    //     mappedRoles.push(UserRole.PARTNER);
+    //   } else if (d365RolesField === D365_USER_ROLE_VALUE) {
+    //     mappedRoles.push(UserRole.USER);
+    //   } else {
+    //     console.warn(`D365ContactService: Unknown role OptionSet value '${d365RolesField}' encountered.`);
+    //   }
+    // }
+    // Example 3: Roles are stored as a Multi-Select OptionSet (Choices) - array of numbers
+    // else if (Array.isArray(d365RolesField) && d365RolesField.every(item => typeof item === 'number')) {
+    //   // Replace these numeric values with the actual OptionSet values from your D365 environment
+    //   const D365_ADMIN_ROLE_VALUE = 100000000; // Example value for Admin
+    //   const D365_PARTNER_ROLE_VALUE = 100000001; // Example value for Partner
+    //   const D365_USER_ROLE_VALUE = 100000002;   // Example value for User
+    //
     //   d365RolesField.forEach(roleValue => {
-    //     if (roleValue === 100000000) mappedRoles.push(UserRole.ADMIN); // Example mapping for OptionSet value for Admin
-    //     if (roleValue === 100000001) mappedRoles.push(UserRole.PARTNER); // Example mapping for OptionSet value for Partner
-    //     // ... etc.
+    //     if (roleValue === D365_ADMIN_ROLE_VALUE) {
+    //       mappedRoles.push(UserRole.ADMIN);
+    //     } else if (roleValue === D365_PARTNER_ROLE_VALUE) {
+    //       mappedRoles.push(UserRole.PARTNER);
+    //     } else if (roleValue === D365_USER_ROLE_VALUE) {
+    //       mappedRoles.push(UserRole.USER);
+    //     } else {
+    //       console.warn(`D365ContactService: Unknown role Multi-Select OptionSet value '${roleValue}' encountered.`);
+    //     }
     //   });
     // }
+    else {
+      console.warn(`D365ContactService: Roles field ('${this.APP_ROLES_FIELD}') has an unexpected data type: ${typeof d365RolesField}. Value:`, d365RolesField);
+    }
 
-    // If no roles are mapped, or if the field is empty/invalid, assign a default role.
-    // This ensures every user has at least a basic role.
+    // If no roles are mapped after attempting to parse, assign a default role.
     if (mappedRoles.length === 0) {
       mappedRoles.push(UserRole.USER);
-      console.log(`D365ContactService: No specific roles found or mapped from D365 field '${this.APP_ROLES_FIELD}', assigning default role: ${UserRole.USER}`);
+      console.log(`D365ContactService: No specific roles were successfully mapped from D365 field '${this.APP_ROLES_FIELD}', assigning default role: ${UserRole.USER}`);
     }
     
     return mappedRoles;
@@ -122,23 +144,20 @@ export class D365ContactService {
   /**
    * Updates a Contact's profile in D365.
    * Placeholder for actual implementation.
-   * 
-   * @param contactId The D365 Contact ID.
-   * @param data The data to update.
-   * @returns A promise that resolves to true if successful, false otherwise.
    */
   static async updateContactProfile(contactId: string, data: Partial<AppContactProfile>): Promise<boolean> {
     console.log(`D365ContactService: Updating D365 Contact ${contactId} with data:`, data);
     try {
-      // Map AppContactProfile fields back to D365 entity fields
       const d365UpdateData: any = {};
       if (data.firstName !== undefined) d365UpdateData.firstname = data.firstName;
       if (data.lastName !== undefined) d365UpdateData.lastname = data.lastName;
-      // ... map other updatable fields
+      // Add other fields from AppContactProfile to d365UpdateData as needed
+      // For example, if you add companyName to AppContactProfile and want to update it:
+      // if (data.companyName !== undefined) d365UpdateData.yourd365fieldforcompanyname = data.companyName;
 
-      // await d365Client.updateRecord("contacts", contactId, d365UpdateData);
-      console.warn("D365ContactService.updateContactProfile is a placeholder and not yet implemented. Needs actual D365 client call.");
-      return true; // Placeholder success
+      await d365Client.updateContact(contactId, d365UpdateData);
+      console.log(`D365ContactService: Successfully updated contact ${contactId}.`);
+      return true; 
     } catch (error) {
       console.error(`D365ContactService: Error updating D365 Contact profile ${contactId}:`, error);
       return false;
