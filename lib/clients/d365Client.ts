@@ -72,6 +72,14 @@ export class D365Client {
    */
   private validateEnvConfig() {
     try {
+      // Log the environment variables as seen by process.env for diagnostics
+      console.log("D365Client: Validating Dataverse environment configuration...");
+      console.log(`D365Client: process.env.DATAVERSE_URL = "${process.env.DATAVERSE_URL}"`);
+      console.log(`D365Client: process.env.DATAVERSE_CLIENT_ID = "${process.env.DATAVERSE_CLIENT_ID}"`);
+      // Avoid logging the full client secret directly for security, just check if it's present.
+      console.log(`D365Client: process.env.DATAVERSE_CLIENT_SECRET is ${process.env.DATAVERSE_CLIENT_SECRET ? 'set' : 'NOT SET'}`);
+      console.log(`D365Client: process.env.DATAVERSE_TENANT_ID = "${process.env.DATAVERSE_TENANT_ID}"`);
+
       const result = dataverseEnvSchema.safeParse({
         DATAVERSE_URL: process.env.DATAVERSE_URL,
         DATAVERSE_CLIENT_ID: process.env.DATAVERSE_CLIENT_ID,
@@ -90,7 +98,7 @@ export class D365Client {
           formattedErrors
         );
       }
-
+      console.log("D365Client: Dataverse environment configuration is valid.");
       return result.data;
     } catch (error) {
       if (error instanceof DataverseError) {
