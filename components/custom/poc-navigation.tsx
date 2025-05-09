@@ -28,7 +28,7 @@ export function PocNavigation() {
             <nav className="flex space-x-4">
               {navItems.map((item) => (
                 <Link
-                  key={item.href}
+                  key={item.name} // Changed from item.href to item.name
                   href={item.href}
                   className={cn(
                     "px-3 py-1 rounded-md text-sm transition-colors",
