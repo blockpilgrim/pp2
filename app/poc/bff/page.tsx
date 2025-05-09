@@ -30,7 +30,7 @@ export default function BffPocPage() {
   const [newItemName, setNewItemName] = useState<string>('');
   const [newItemDescription, setNewItemDescription] = useState<string>('');
 
-  // State for updating an item (simplified: targets the first item for demo)
+  // State for updating an item
   const [updateItemId, setUpdateItemId] = useState<string | null>(null);
   const [updateItemName, setUpdateItemName] = useState<string>('');
   const [updateItemDescription, setUpdateItemDescription] = useState<string>('');
@@ -48,13 +48,21 @@ export default function BffPocPage() {
       }
       const data: Item[] = await response.json();
       setItems(data);
-      if (data.length > 0 && !updateItemId) { // Pre-fill update form with first item for demo
+      // If there are items and no item is currently selected for update,
+      // pre-fill the update form with the first item for demonstration purposes.
+      if (data.length > 0 && !updateItemId) { 
         setUpdateItemId(data[0].id);
         setUpdateItemName(data[0].name);
         setUpdateItemDescription(data[0].description);
+      } else if (data.length === 0) {
+        // If no items, clear the update form
+        setUpdateItemId(null);
+        setUpdateItemName('');
+        setUpdateItemDescription('');
       }
     } catch (err: any) {
       setError(err.message);
+      setItems([]); // Clear items on error
     } finally {
       setIsLoading(false);
     }
@@ -85,7 +93,7 @@ export default function BffPocPage() {
       setSuccessMessage(`Item "${createdItem.name}" created successfully!`);
       setNewItemName('');
       setNewItemDescription('');
-      fetchItems(); // Refresh the list
+      await fetchItems(); // Refresh the list and potentially pre-fill update form
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -113,9 +121,14 @@ export default function BffPocPage() {
         const errorData = await response.json();
         throw new Error(errorData.message || `Failed to update item: ${response.statusText}`);
       }
-      const updatedItem: Item = await response.json();
-      setSuccessMessage(`Item "${updatedItem.name}" updated successfully!`);
-      fetchItems(); // Refresh the list
+      const updatedItemData: Item = await response.json();
+      setSuccessMessage(`Item "${updatedItemData.name}" updated successfully!`);
+      await fetchItems(); // Refresh the list
+      // Keep the updated item selected for further edits if needed
+      setUpdateItemId(updatedItemData.id);
+      setUpdateItemName(updatedItemData.name);
+      setUpdateItemDescription(updatedItemData.description);
+
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -127,7 +140,7 @@ export default function BffPocPage() {
     setUpdateItemId(item.id);
     setUpdateItemName(item.name);
     setUpdateItemDescription(item.description);
-    setSuccessMessage(null);
+    setSuccessMessage(null); // Clear messages when selecting a new item
     setError(null);
   }
 
@@ -143,14 +156,14 @@ export default function BffPocPage() {
         </header>
 
         {error && (
-          <Alert variant="destructive">
+          <Alert variant="destructive" className="my-4">
             <Terminal className="h-4 w-4" />
             <AlertTitle>Error</AlertTitle>
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
         {successMessage && (
-          <Alert variant="default" className="bg-green-100 dark:bg-green-900 border-green-300 dark:border-green-700">
+          <Alert variant="default" className="my-4 bg-green-100 dark:bg-green-900 border-green-300 dark:border-green-700 text-green-700 dark:text-green-200">
             <Terminal className="h-4 w-4" />
             <AlertTitle>Success</AlertTitle>
             <AlertDescription>{successMessage}</AlertDescription>
@@ -162,28 +175,28 @@ export default function BffPocPage() {
           <Card>
             <CardHeader>
               <CardTitle>GET /api/bff-poc/items</CardTitle>
-              <CardDescription>Fetch and display a list of items.</CardDescription>
+              <CardDescription>Fetch and display a list of items. Click "Edit" to populate the update form.</CardDescription>
             </CardHeader>
             <CardContent>
-              {isLoading && items.length === 0 && <p>Loading items...</p>}
-              {!isLoading && items.length === 0 && !error && <p>No items found. Try creating one!</p>}
+              {isLoading && items.length === 0 && <p className="text-muted-foreground">Loading items...</p>}
+              {!isLoading && items.length === 0 && !error && <p className="text-muted-foreground">No items found. Try creating one!</p>}
               {items.length > 0 && (
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>ID</TableHead>
+                      <TableHead className="w-[80px]">ID</TableHead>
                       <TableHead>Name</TableHead>
                       <TableHead>Description</TableHead>
-                      <TableHead>Actions</TableHead>
+                      <TableHead className="text-right w-[100px]">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {items.map((item) => (
-                      <TableRow key={item.id}>
+                      <TableRow key={item.id} className={item.id === updateItemId ? "bg-muted/50" : ""}>
                         <TableCell className="font-mono text-xs">{item.id.substring(0,5)}...</TableCell>
                         <TableCell>{item.name}</TableCell>
                         <TableCell>{item.description}</TableCell>
-                        <TableCell>
+                        <TableCell className="text-right">
                           <Button variant="outline" size="sm" onClick={() => selectItemForUpdate(item)}>
                             Edit
                           </Button>
@@ -218,6 +231,7 @@ export default function BffPocPage() {
                       onChange={(e) => setNewItemName(e.target.value)}
                       placeholder="Enter item name"
                       required
+                      disabled={isLoading}
                     />
                   </div>
                   <div>
@@ -228,6 +242,7 @@ export default function BffPocPage() {
                       onChange={(e) => setNewItemDescription(e.target.value)}
                       placeholder="Enter item description"
                       required
+                      disabled={isLoading}
                     />
                   </div>
                 </CardContent>
@@ -243,15 +258,15 @@ export default function BffPocPage() {
             <Card>
               <CardHeader>
                 <CardTitle>PATCH /api/bff-poc/items?id=&#123;itemId&#125;</CardTitle>
-                <CardDescription>Update an existing item. Select an item from the list above to edit.</CardDescription>
+                <CardDescription>Update an existing item. Select an item from the list to edit its details here.</CardDescription>
               </CardHeader>
               <form onSubmit={handleUpdateItem}>
                 <CardContent className="space-y-4">
                    {updateItemId ? (
                     <>
                       <div>
-                        <Label htmlFor="updateItemId">Item ID (Editing)</Label>
-                        <Input id="updateItemId" value={updateItemId} readOnly disabled />
+                        <Label htmlFor="updateItemIdDisplay">Item ID (Editing)</Label>
+                        <Input id="updateItemIdDisplay" value={updateItemId} readOnly disabled className="font-mono text-xs" />
                       </div>
                       <div>
                         <Label htmlFor="updateItemName">New Name</Label>
@@ -261,6 +276,7 @@ export default function BffPocPage() {
                           onChange={(e) => setUpdateItemName(e.target.value)}
                           placeholder="Enter new name"
                           required
+                          disabled={isLoading}
                         />
                       </div>
                       <div>
@@ -271,16 +287,17 @@ export default function BffPocPage() {
                           onChange={(e) => setUpdateItemDescription(e.target.value)}
                           placeholder="Enter new description"
                           required
+                          disabled={isLoading}
                         />
                       </div>
                     </>
                    ) : (
-                    <p className="text-muted-foreground">Select an item from the list to enable editing.</p>
+                    <p className="text-muted-foreground py-10 text-center">Select an item from the list to enable editing.</p>
                    )}
                 </CardContent>
                 <CardFooter>
                   <Button type="submit" disabled={isLoading || !updateItemId}>
-                    {isLoading ? 'Updating...' : 'Update Item'}
+                    {isLoading ? 'Updating...' : 'Update Selected Item'}
                   </Button>
                 </CardFooter>
               </form>
@@ -304,13 +321,13 @@ export default function BffPocPage() {
                 <strong>GET, POST, PATCH Operations:</strong> Demonstrating fetching, creating, and updating data.
               </li>
               <li>
-                <strong>Dynamic UI Updates:</strong> List refreshes after create/update operations.
+                <strong>Dynamic UI Updates:</strong> List refreshes after create/update operations. Item selection for update form.
               </li>
               <li>
-                <strong>Loading and Error States:</strong> Basic visual feedback for API call status.
+                <strong>Loading and Error States:</strong> Visual feedback for API call status and form input disabling during operations.
               </li>
               <li>
-                <strong>(Planned) Input Validation:</strong> Currently basic `required` on forms. Server-side validation is in the API. Zod for client-side is for a future POC.
+                <strong>Basic Form Validation:</strong> Client-side `required` attributes. Server-side validation is present in the API.
               </li>
             </ul>
           </CardContent>
