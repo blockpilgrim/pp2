@@ -44,6 +44,8 @@ type CachedToken = {
   expiresAt: number; // Store expiry time (timestamp in seconds)
 };
 
+let instanceCounter = 0;
+
 // D365 Client class
 export class D365Client {
   private dataverseUrl: string;
@@ -51,6 +53,7 @@ export class D365Client {
   private clientSecret: string;
   private tenantId: string;
   private cachedToken: CachedToken | null = null;
+  private instanceId: number;
 
   constructor(config?: {
     dataverseUrl?: string;
@@ -58,6 +61,8 @@ export class D365Client {
     clientSecret?: string;
     tenantId?: string;
   }) {
+    this.instanceId = ++instanceCounter;
+    console.log(`D365Client[${this.instanceId}]: Initializing...`);
     // Try to load from environment if not provided
     const envConfig = this.validateEnvConfig();
 
@@ -65,6 +70,7 @@ export class D365Client {
     this.clientId = config?.clientId || envConfig.DATAVERSE_CLIENT_ID;
     this.clientSecret = config?.clientSecret || envConfig.DATAVERSE_CLIENT_SECRET;
     this.tenantId = config?.tenantId || envConfig.DATAVERSE_TENANT_ID;
+    console.log(`D365Client[${this.instanceId}]: Initialized successfully.`);
   }
 
   /**
@@ -73,12 +79,11 @@ export class D365Client {
   private validateEnvConfig() {
     try {
       // Log the environment variables as seen by process.env for diagnostics
-      console.log("D365Client: Validating Dataverse environment configuration...");
-      console.log(`D365Client: process.env.DATAVERSE_URL = "${process.env.DATAVERSE_URL}"`);
-      console.log(`D365Client: process.env.DATAVERSE_CLIENT_ID = "${process.env.DATAVERSE_CLIENT_ID}"`);
-      // Avoid logging the full client secret directly for security, just check if it's present.
-      console.log(`D365Client: process.env.DATAVERSE_CLIENT_SECRET is ${process.env.DATAVERSE_CLIENT_SECRET ? 'set' : 'NOT SET'}`);
-      console.log(`D365Client: process.env.DATAVERSE_TENANT_ID = "${process.env.DATAVERSE_TENANT_ID}"`);
+      console.log(`D365Client[${this.instanceId}]: Validating Dataverse environment configuration...`);
+      console.log(`D365Client[${this.instanceId}]: process.env.DATAVERSE_URL = "${process.env.DATAVERSE_URL}"`);
+      console.log(`D365Client[${this.instanceId}]: process.env.DATAVERSE_CLIENT_ID = "${process.env.DATAVERSE_CLIENT_ID}"`);
+      console.log(`D365Client[${this.instanceId}]: process.env.DATAVERSE_CLIENT_SECRET is ${process.env.DATAVERSE_CLIENT_SECRET ? 'set' : 'NOT SET'}`);
+      console.log(`D365Client[${this.instanceId}]: process.env.DATAVERSE_TENANT_ID = "${process.env.DATAVERSE_TENANT_ID}"`);
 
       const result = dataverseEnvSchema.safeParse({
         DATAVERSE_URL: process.env.DATAVERSE_URL,
@@ -89,25 +94,23 @@ export class D365Client {
 
       if (!result.success) {
         const formattedErrors = result.error.format();
-        // Log detailed errors to the server console for easier debugging
-        console.error('❌ Invalid Dataverse environment configuration in d365Client.ts. Details:', formattedErrors);
+        console.error(`❌ D365Client[${this.instanceId}]: Invalid Dataverse environment configuration. Details:`, formattedErrors);
         throw new DataverseError(
-          'Invalid Dataverse environment configuration. Check server logs for details.',
+          `D365Client[${this.instanceId}]: Invalid Dataverse environment configuration. Check server logs for details.`,
           DataverseErrorType.CONFIGURATION,
           400,
           formattedErrors
         );
       }
-      console.log("D365Client: Dataverse environment configuration is valid.");
+      console.log(`D365Client[${this.instanceId}]: Dataverse environment configuration is valid.`);
       return result.data;
     } catch (error) {
       if (error instanceof DataverseError) {
         throw error;
       }
-      // Log the unexpected error during validation
-      console.error('❌ Unexpected error during Dataverse configuration validation:', error);
+      console.error(`❌ D365Client[${this.instanceId}]: Unexpected error during Dataverse configuration validation:`, error);
       throw new DataverseError(
-        'Failed to validate Dataverse configuration due to an unexpected error. Check server logs.',
+        `D365Client[${this.instanceId}]: Failed to validate Dataverse configuration due to an unexpected error. Check server logs.`,
         DataverseErrorType.CONFIGURATION
       );
     }
@@ -117,14 +120,15 @@ export class D365Client {
    * Gets an access token for Dataverse API, using cache if available
    */
   async getAccessToken(): Promise<string> {
+    console.log(`D365Client[${this.instanceId}]: Attempting to get access token...`);
     const nowInSeconds = Math.floor(Date.now() / 1000);
 
-    // Return cached token if it exists and hasn't expired (with a 60-second buffer)
     if (this.cachedToken && this.cachedToken.expiresAt > nowInSeconds + 60) {
+      console.log(`D365Client[${this.instanceId}]: Returning cached access token.`);
       return this.cachedToken.accessToken;
     }
+    console.log(`D365Client[${this.instanceId}]: No valid cached token. Fetching new token...`);
 
-    // Fetch new token
     const tokenUrl = `https://login.microsoftonline.com/${this.tenantId}/oauth2/v2.0/token`;
     try {
       const tokenResponse = await fetch(tokenUrl, {
@@ -140,9 +144,9 @@ export class D365Client {
 
       if (!tokenResponse.ok) {
         const errText = await tokenResponse.text();
-        console.error(`❌ Failed to obtain Dataverse access token. Status: ${tokenResponse.status}. Response: ${errText}`);
+        console.error(`❌ D365Client[${this.instanceId}]: Failed to obtain Dataverse access token. Status: ${tokenResponse.status}. URL: ${tokenUrl}. Response: ${errText}`);
         throw new DataverseError(
-          'Failed to obtain Dataverse access token. Check server logs for details.',
+          `D365Client[${this.instanceId}]: Failed to obtain Dataverse access token. Check server logs for details.`,
           DataverseErrorType.AUTHENTICATION,
           tokenResponse.status,
           errText
@@ -150,23 +154,22 @@ export class D365Client {
       }
 
       const tokenData = await tokenResponse.json();
-      const expiresIn = tokenData.expires_in; // typically 3600 seconds (1 hour)
+      const expiresIn = tokenData.expires_in; 
       const accessToken = tokenData.access_token;
 
-      // Cache the new token with its expiry time
       this.cachedToken = {
         accessToken: accessToken,
         expiresAt: nowInSeconds + expiresIn,
       };
-
+      console.log(`D365Client[${this.instanceId}]: Successfully obtained and cached new access token.`);
       return accessToken;
     } catch (error) {
       if (error instanceof DataverseError) {
         throw error;
       }
-      console.error('❌ Exception during Dataverse token fetch:', error);
+      console.error(`❌ D365Client[${this.instanceId}]: Exception during Dataverse token fetch:`, error);
       throw new DataverseError(
-        'Failed to fetch Dataverse token due to an exception. Check server logs.',
+        `D365Client[${this.instanceId}]: Failed to fetch Dataverse token due to an exception. Check server logs.`,
         DataverseErrorType.AUTHENTICATION
       );
     }
@@ -184,13 +187,12 @@ export class D365Client {
       body?: any;
     } = {}
   ): Promise<T> {
+    const requestMethod = options.method || 'GET';
+    console.log(`D365Client[${this.instanceId}]: Making ${requestMethod} request to endpoint: ${endpoint}`);
     try {
       const accessToken = await this.getAccessToken();
       
-      // Normalize endpoint - ensure it starts with a slash
       const normalizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
-      
-      // Build URL with query parameters if provided
       let url = `${this.dataverseUrl}${normalizedEndpoint}`;
       if (options.params && Object.keys(options.params).length > 0) {
         const searchParams = new URLSearchParams();
@@ -200,58 +202,53 @@ export class D365Client {
         url += `?${searchParams.toString()}`;
       }
 
-      // Prepare headers with authentication
       const headers = {
         Authorization: `Bearer ${accessToken}`,
         Accept: 'application/json',
         ...options.headers,
       };
 
-      // Add content-type for requests with body
       if (options.body && !headers['Content-Type']) {
         headers['Content-Type'] = 'application/json';
       }
 
-      // Make the request
       const response = await fetch(url, {
-        method: options.method || 'GET',
+        method: requestMethod,
         headers,
         body: options.body ? JSON.stringify(options.body) : undefined,
       });
 
-      // Handle non-success responses
       if (!response.ok) {
         const errText = await response.text();
-        console.error(`❌ Dataverse API request failed. URL: ${url}, Method: ${options.method || 'GET'}, Status: ${response.status}. Response: ${errText}`);
+        console.error(`❌ D365Client[${this.instanceId}]: Dataverse API request failed. URL: ${url}, Method: ${requestMethod}, Status: ${response.status}. Response: ${errText}`);
         throw new DataverseError(
-          `Dataverse API request failed with status ${response.status}. Check server logs for details.`,
+          `D365Client[${this.instanceId}]: Dataverse API request failed with status ${response.status}. Check server logs for details.`,
           DataverseErrorType.RESPONSE,
           response.status,
           errText
         );
       }
 
-      // Parse JSON response
-      // Handle cases where response might be empty (e.g., 204 No Content for PATCH/DELETE)
       if (response.status === 204) {
-        return undefined as T; // Or an appropriate representation for no content
+        console.log(`D365Client[${this.instanceId}]: Request to ${url} successful with status 204 No Content.`);
+        return undefined as T; 
       }
       const data = await response.json();
+      console.log(`D365Client[${this.instanceId}]: Request to ${url} successful.`);
       return data as T;
     } catch (error) {
       if (error instanceof DataverseError) {
         throw error;
       }
-      // Log other types of errors that might occur during the request process
-      console.error(`❌ Unexpected error during Dataverse request. URL: ${options.method || 'GET'} ${endpoint}. Error:`, error);
-      if (error instanceof TypeError || (error instanceof Error && error.message.includes('fetch'))) { // More specific check for fetch-related network errors
+      console.error(`❌ D365Client[${this.instanceId}]: Unexpected error during Dataverse request. URL: ${requestMethod} ${endpoint}. Error:`, error);
+      if (error instanceof TypeError || (error instanceof Error && error.message.includes('fetch'))) {
         throw new DataverseError(
-          `Network error during Dataverse request: ${error.message}. Check server logs.`,
+          `D365Client[${this.instanceId}]: Network error during Dataverse request: ${error.message}. Check server logs.`,
           DataverseErrorType.NETWORK
         );
       }
       throw new DataverseError(
-        'Unknown error occurred during Dataverse request. Check server logs.',
+        `D365Client[${this.instanceId}]: Unknown error occurred during Dataverse request. Check server logs.`,
         DataverseErrorType.UNKNOWN
       );
     }
@@ -266,23 +263,11 @@ export class D365Client {
     top?: number;
   } = {}) {
     const params: Record<string, string> = {};
+    if (options.select && options.select.length > 0) params.$select = options.select.join(',');
+    if (options.filter) params.$filter = options.filter;
+    if (options.top) params.$top = options.top.toString();
 
-    if (options.select && options.select.length > 0) {
-      params.$select = options.select.join(',');
-    }
-
-    if (options.filter) {
-      params.$filter = options.filter;
-    }
-
-    if (options.top) {
-      params.$top = options.top.toString();
-    }
-
-    const response = await this.request<{ value: any[] }>('/api/data/v9.2/contacts', {
-      params,
-    });
-
+    const response = await this.request<{ value: any[] }>('/api/data/v9.2/contacts', { params });
     return response.value;
   }
 
@@ -295,24 +280,14 @@ export class D365Client {
     emailaddress1: string;
     [key: string]: any;
   }) {
-    return this.request('/api/data/v9.2/contacts', {
-      method: 'POST',
-      body: contact,
-    });
+    return this.request('/api/data/v9.2/contacts', { method: 'POST', body: contact });
   }
 
   /**
    * Updates an existing contact in Dataverse
    */
   async updateContact(contactId: string, contact: Record<string, any>) {
-    // For PATCH operations, Dataverse typically returns 204 No Content on success.
-    // The request method handles 204 by returning undefined.
-    await this.request(`/api/data/v9.2/contacts(${contactId})`, {
-      method: 'PATCH',
-      body: contact,
-    });
-    // You might want to return a boolean or the updated data (if API was changed to return it)
-    // For now, aligning with 204 No Content means no specific data is returned.
+    await this.request(`/api/data/v9.2/contacts(${contactId})`, { method: 'PATCH', body: contact });
     return true; 
   }
 
@@ -325,23 +300,11 @@ export class D365Client {
     top?: number;
   } = {}) {
     const params: Record<string, string> = {};
+    if (options.select && options.select.length > 0) params.$select = options.select.join(',');
+    if (options.filter) params.$filter = options.filter;
+    if (options.top) params.$top = options.top.toString();
 
-    if (options.select && options.select.length > 0) {
-      params.$select = options.select.join(',');
-    }
-
-    if (options.filter) {
-      params.$filter = options.filter;
-    }
-
-    if (options.top) {
-      params.$top = options.top.toString();
-    }
-
-    const response = await this.request<{ value: any[] }>('/api/data/v9.2/leads', {
-      params,
-    });
-
+    const response = await this.request<{ value: any[] }>('/api/data/v9.2/leads', { params });
     return response.value;
   }
 
@@ -354,15 +317,9 @@ export class D365Client {
     emailaddress1: string;
     [key: string]: any;
   }) {
-    return this.request('/api/data/v9.2/leads', {
-      method: 'POST',
-      body: lead,
-    });
+    return this.request('/api/data/v9.2/leads', { method: 'POST', body: lead });
   }
 }
 
-// Export a singleton instance for use throughout the application
 export const d365Client = new D365Client();
-
-// Default export for when users want to create their own instance
 export default D365Client;
