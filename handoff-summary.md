@@ -62,8 +62,8 @@ This checklist represents features organized by POC module, with each module foc
 - [x] **Environment Variables Configured:** `.env.example` updated for D365 field names (`DATAVERSE_CONTACT_AAD_OBJECT_ID_FIELD`, `DATAVERSE_CONTACT_APP_ROLES_FIELD`).
 - [x] **D365 Field Name Usage:** `D365ContactService` uses environment variables for field names.
 - [x] **UI Updated:** `poc-navigation.tsx` displays D365 user status and session errors.
-- [ ] **Adapt `mapD365RolesToAppRoles` (CRITICAL):** Logic in `D365ContactService` must be updated to correctly parse roles based on D365 storage format (e.g., OptionSet, Choices). Examples provided.
-- [ ] **Thorough Testing (End-to-End):**
+- [x] **Adapt `mapD365RolesToAppRoles` (Completed):** Logic in `D365ContactService` confirmed to handle comma-separated string format for roles; other examples retained as comments.
+- [ ] **Thorough Testing (End-to-End) (Current Focus):**
     - [ ] User exists in Azure AD and D365 (with roles correctly mapped).
     - [ ] User exists in Azure AD but not in D365 (or not linked).
     - [ ] Various D365 role configurations and error scenarios (e.g., API errors, malformed role data).
@@ -270,30 +270,31 @@ The current effort involves completing the integration of Dynamics 365 (D365) as
 4.  **Type Augmentation (Completed):** TypeScript declarations for `Session` and `JWT` extended.
 5.  **D365 Setup & Environment Configuration (User Confirmed Completed):** Necessary fields in D365 (for AAD Object ID and App Roles) are set up, and local `.env` files are populated with their logical names.
 6.  **UI Updated (Completed):** `poc-navigation.tsx` now displays D365 user status and session errors.
+7.  **Adapt `mapD365RolesToAppRoles` (Completed):**
+    *   The developer has confirmed that the D365 `APP_ROLES_FIELD` uses a comma-separated string format.
+    *   The existing `mapD365RolesToAppRoles` method in `lib/services/d365ContactService.ts` correctly handles this format. Other parsing examples remain commented out for future reference.
+8.  **Verify `d365Client` Functionality (Initial Verification Completed):**
+    *   `lib/clients/d365Client.ts` now initializes correctly in both server and client environments (client-side instance is non-functional by design, preventing crashes related to server-only environment variables).
+    *   Further verification of Dataverse API request success will occur during end-to-end testing.
 
 **Next Steps for Auth POC Refinement:**
 
-1.  **Adapt `mapD365RolesToAppRoles` (CRITICAL - User Action Required):**
-    *   The developer must review and modify the `mapD365RolesToAppRoles` method in `lib/services/d365ContactService.ts`.
-    *   The logic needs to accurately parse the role data from the D365 `APP_ROLES_FIELD` based on its actual storage format (e.g., comma-separated string, OptionSet numeric values, Choices array of numbers). Examples for these formats are now provided in the method.
-2.  **Thorough End-to-End Testing:**
+1.  **Thorough End-to-End Testing (CRITICAL - Current Focus):**
     *   Restart the Next.js application.
-    *   Test Case 1: User in AAD & D365 with correctly mapped roles. Verify `session.user` details.
-    *   Test Case 2: User in AAD, not in D365 (or not linked). Verify default roles and `isD365User: false`.
-    *   Test Case 3: Different D365 role configurations and error/edge cases (e.g., empty roles field, malformed data if applicable).
-    *   Monitor server-side console logs for debugging messages from `D365ContactService` and `lib/auth.ts`.
-3.  **Verify `d365Client` Functionality:**
-    *   Ensure `lib/clients/d365Client.ts` is correctly authenticating and making API requests to Dataverse. This will be implicitly tested during the end-to-end auth flow testing.
-4.  **Implement `updateContactProfile` (Post-Testing):**
-    *   Complete the `updateContactProfile` method in `D365ContactService` by ensuring `d365Client.updateContact` is called correctly.
-    *   Create a basic UI and API route to allow users to update parts of their D365 profile from the portal.
-5.  **UI/UX Enhancements (Post-Testing):**
+    *   Test Case 1: User in AAD & D365 with correctly mapped roles. Verify `session.user` details (including roles and `isD365User: true`).
+    *   Test Case 2: User in AAD, not in D365 (or not linked via AAD Object ID). Verify default roles (e.g., `UserRole.USER`) and `session.user.isD365User: false`.
+    *   Test Case 3: Different D365 role configurations and error/edge cases (e.g., empty roles field, roles not defined in `UserRole` enum, leading/trailing spaces around roles/commas).
+    *   Monitor server-side console logs for debugging messages from `D365ContactService` and `lib/auth.ts`, especially regarding D365 contact lookup and role mapping.
+2.  **Implement `updateContactProfile` (Post-Testing):**
+    *   Complete the `updateContactProfile` method in `D365ContactService` by ensuring `d365Client.updateContact` is called correctly with the appropriate D365 contact ID and payload.
+    *   Create a basic UI (e.g., a simple form on a profile page) and a corresponding API route to allow users to update parts of their D365 profile (e.g., first name, last name) from the portal.
+3.  **UI/UX Enhancements (Post-Testing):**
     *   Further update UI components to display more D365-sourced profile information (e.g., on a dedicated profile page or dashboard).
-    *   Refine how the application behaves for users with `isD365User: false`.
-6.  **Refine Error Handling (Post-Testing):**
-    *   Implement more user-friendly display of session errors (e.g., using toast notifications for `D365LookupFailed`).
+    *   Refine how the application behaves for users with `isD365User: false` (e.g., display a message prompting them to contact support if they expect D365 access).
+4.  **Refine Error Handling (Post-Testing):**
+    *   Implement more user-friendly display of session errors related to D365 integration (e.g., using toast notifications for `D365LookupFailed` or similar errors surfaced in `session.error`).
 
-*Last updated: 2025-05-10* 
+*Last updated: 2025-05-11* 
 
 ---
 
