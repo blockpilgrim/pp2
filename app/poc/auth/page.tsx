@@ -9,53 +9,37 @@ import RbacDemo from '@/components/custom/auth/rbac-demo';
 import SessionMonitor from '@/components/custom/auth/session-monitor';
 
 export default function AuthPocPage() {
-  const { data: session, status } = useSession();
-  const [isLoading, setIsLoading] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [isPartner, setIsPartner] = useState(false);
+  const { data: session, status, update: updateSession } = useSession(); // Added updateSession
+  const [isLoadingClient, setIsLoadingClient] = useState(true); // Renamed to avoid conflict with status === 'loading'
   
   // State to track which demo panel is expanded
   const [expandedPanel, setExpandedPanel] = useState<string | null>(null);
   
-  // Set up client-side only rendering for session-dependent states
+  // Derived states based on session
+  const isAuthenticated = status === 'authenticated' && !!session;
+  const isAdmin = isAuthenticated && useHasRole(session, UserRole.ADMIN);
+  const isPartner = isAuthenticated && useHasRole(session, UserRole.PARTNER);
+  
   useEffect(() => {
-    console.log('Auth state:', { status, session }); // Debug logging
-    
-    setIsLoading(status === 'loading');
-    setIsAuthenticated(!!session);
-    
-    // Only check roles when we have a session and aren't loading
-    if (session && status !== 'loading') {
-      const hasAdminRole = useHasRole(session, UserRole.ADMIN);
-      const hasPartnerRole = useHasRole(session, UserRole.PARTNER);
-      setIsAdmin(hasAdminRole);
-      setIsPartner(hasPartnerRole);
-    }
-    
-    // Only set the expanded panel after client hydration
-    if (status !== 'loading') {
+    // This effect runs once on mount to ensure client-side state is initialized
+    // and to potentially set the initial expanded panel.
+    setIsLoadingClient(false);
+    if (status !== 'loading') { // Only set panel if session status is determined
       setExpandedPanel('authentication');
     }
-  }, [session, status]);
-  
-  // Force session update when component mounts
-  useEffect(() => {
-    // This helps force a fresh session check from the server
-    const updateSession = async () => {
-      const event = new Event('visibilitychange');
-      document.dispatchEvent(event);
-    };
-    
-    if (typeof window !== 'undefined') {
-      updateSession();
-    }
-  }, []);
-  
-  // Handler for sign-in button
+  }, [status]); // Rerun if session status changes, e.g., after login/logout
+
+  // Optional: If there's a specific need to force a session refresh on mount,
+  // for example, if redirects or specific flows lead to stale session data
+  // that SessionProvider's polling doesn't catch immediately.
+  // useEffect(() => {
+  //   if (status === 'authenticated') { // Or some other condition
+  //     // updateSession(); // Call this to force a session refetch from server
+  //   }
+  // }, [status, updateSession]); // Careful with dependencies to avoid infinite loops
+
   const handleSignIn = async () => {
     try {
-      // Sign in directly with Microsoft Entra ID
       await signIn('microsoft-entra-id', { 
         callbackUrl: '/poc/auth',
         redirect: true
@@ -64,6 +48,14 @@ export default function AuthPocPage() {
       console.error('Sign in failed:', error);
     }
   };
+  
+  if (isLoadingClient || status === 'loading') {
+    return (
+      <div className="container mx-auto p-6 max-w-5xl text-center">
+        <p>Loading authentication details...</p>
+      </div>
+    );
+  }
   
   return (
     <div className="container mx-auto p-6 max-w-5xl">
@@ -79,11 +71,15 @@ export default function AuthPocPage() {
             <span className="font-medium">{isAuthenticated ? 'Authenticated' : 'Not Authenticated'}</span>
           </div>
           
-          {isAuthenticated && (
+          {isAuthenticated && session?.user && (
             <div className="ml-5 mt-2">
-              <p className="text-sm text-gray-600">Logged in as: <span className="font-medium">{session?.user?.email}</span></p>
-              <p className="text-sm text-gray-600">Name: <span className="font-medium">{session?.user?.name}</span></p>
-              <p className="text-sm text-gray-600">Roles: <span className="font-medium">{session?.user?.roles?.join(', ') || 'None'}</span></p>
+              <p className="text-sm text-gray-600">Logged in as: <span className="font-medium">{session.user.email}</span></p>
+              <p className="text-sm text-gray-600">Name: <span className="font-medium">{session.user.name}</span></p>
+              <p className="text-sm text-gray-600">Roles: <span className="font-medium">{session.user.roles?.join(', ') || 'None'}</span></p>
+              <p className="text-sm text-gray-600">D365 User: <span className="font-medium">{session.user.isD365User ? 'Yes' : 'No'}</span></p>
+              {session.error && (
+                <p className="text-sm text-red-500">Session Error: <span className="font-medium">{session.error}</span></p>
+              )}
             </div>
           )}
         </div>
@@ -93,9 +89,8 @@ export default function AuthPocPage() {
             <button
               onClick={handleSignIn}
               className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
-              disabled={isLoading}
             >
-              {isLoading ? 'Loading...' : 'Sign In with Microsoft Entra ID'}
+              Sign In with Microsoft Entra ID
             </button>
           ) : (
             <button
@@ -104,9 +99,8 @@ export default function AuthPocPage() {
                 redirect: true
               })}
               className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
-              disabled={isLoading}
             >
-              {isLoading ? 'Loading...' : 'Sign Out'}
+              Sign Out
             </button>
           )}
         </div>
@@ -336,7 +330,7 @@ export default function AuthPocPage() {
               <li><strong>Auth Provider:</strong> NextAuth v5 (Auth.js) with Microsoft Entra ID</li>
               <li><strong>Session Strategy:</strong> JWT-based with custom claims for user roles</li>
               <li><strong>Route Protection:</strong> Next.js middleware for route-based access control</li>
-              <li><strong>Role Management:</strong> User roles stored in JWT token and session</li>
+              <li><strong>Role Management:</strong> User roles sourced from Dynamics 365, stored in JWT and session</li>
               <li><strong>UI Integration:</strong> Role-based conditional rendering patterns</li>
               <li><strong>Helpers:</strong> Server and client utilities for role checking</li>
             </ul>
@@ -345,7 +339,7 @@ export default function AuthPocPage() {
               <h3 className="font-medium mb-3">Security Features</h3>
               <ul className="list-disc pl-5 space-y-2 text-sm">
                 <li><strong>CSRF Protection:</strong> NextAuth's built-in CSRF protection</li>
-                <li><strong>Secure Session:</strong> JWT tokens with proper expiration</li>
+                <li><strong>Secure Session:</strong> JWT tokens with proper expiration and secure cookie settings</li>
                 <li><strong>Protected Routes:</strong> Authentication checks via middleware</li>
                 <li><strong>Role Verification:</strong> Multiple levels of role-based access control</li>
               </ul>

@@ -11,17 +11,17 @@ This document tracks shortcuts taken during POC development that would need to b
 
 ```
 Item: In-memory token caching
-Description: Core Infrastructure POC uses simple in-memory caching for Dataverse tokens
-Why it's debt: In-memory caching doesn't persist across serverless function invocations
-Production approach: Replace with Redis cache or Azure Key Vault for token storage
+Description: Core Infrastructure POC uses simple in-memory caching for Dataverse tokens via `d365Client.ts`.
+Why it's debt: In-memory caching doesn't persist across serverless function invocations and is not suitable for a scaled production environment.
+Production approach: Replace with Redis cache or Azure Key Vault for token storage.
 Priority: Medium
 ```
 
 ```
-Item: Manual role assignment in auth flow
-Description: Authentication POC assigns roles based on email domains in the JWT callback
-Why it's debt: In a production environment, roles should come from the identity provider or a database
-Production approach: Integrate with Microsoft Entra ID claims or implement a database-backed role system
+Item: Role management sourced from Dynamics 365
+Description: Authentication POC sources user roles from a specific field in the Dynamics 365 Contact entity. While this is an improvement over hardcoded roles, the management of these roles within D365 (e.g., ensuring data integrity, providing an interface for administrators) is not part of the current portal.
+Why it's debt: Role management is external and relies on D365 data entry. Production environments may require more robust role management features, auditing, or integration with Entra ID group-based roles if D365 is not the sole source of truth for app roles.
+Production approach: Evaluate long-term role management strategy. Options include: enhancing D365 role management processes, building administrative interfaces within the portal for role assignment (if appropriate), or integrating more deeply with Microsoft Entra ID group-to-role mapping.
 Priority: Medium
 ```
 
@@ -43,9 +43,9 @@ Priority: High
 
 ```
 Item: Hard-coded filter in Dataverse query
-Description: Current implementation uses a fixed filter (contains(emailaddress1,'@thecontingent.org'))
-Why it's debt: Not configurable for multi-tenant usage and prevents proper filtering
-Production approach: Implement configurable filters based on tenant settings and user inputs
+Description: Current implementation uses a fixed filter (contains(emailaddress1,'@thecontingent.org')) in some older/example Dataverse queries (Note: review if this is still present outside of `d365ContactService` which uses dynamic filters).
+Why it's debt: Not configurable for multi-tenant usage and prevents proper filtering if still used.
+Production approach: Implement configurable filters based on tenant settings and user inputs. Ensure all Dataverse queries are dynamic and secure.
 Priority: High
 ```
 
@@ -93,6 +93,14 @@ Why it's debt:
 - Error messages for validation failures are generic.
 Production approach: Implement comprehensive server-side validation using Zod schemas for request bodies and query parameters in all API routes. Provide detailed error messages.
 Priority: Medium (High before any production use of such an endpoint)
+```
+
+```
+Item: Missing Entra ID access token refresh mechanism in JWT callback
+Description: The `lib/auth.ts` JWT callback stores the user's Entra ID access token (e.g., for MS Graph API calls) but lacks logic to refresh it upon expiration.
+Why it's debt: If the access token is used for API calls and expires, those calls will fail, leading to a degraded user experience or loss of functionality. This is critical if features rely on this user-delegated token.
+Production approach: Implement a robust token refresh mechanism within the JWT callback using the stored refresh token to obtain a new access token from Microsoft Entra ID. Ensure proper error handling for refresh failures. If the access token is not actively used, consider removing it from the JWT.
+Priority: High (if access token is actively used), Low (if not used)
 ```
 
 ## Adding New Technical Debt Items

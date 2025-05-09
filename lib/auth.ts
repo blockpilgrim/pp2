@@ -50,7 +50,7 @@ declare module "next-auth/jwt" {
 
     // Fields for token refresh management (if applicable)
     accessToken?: string;
-    accessTokenExpires?: number;
+    accessTokenExpires?: number; // Store as timestamp (milliseconds)
     refreshToken?: string;
     error?: string; // For token-related errors or D365 lookup issues
   }
@@ -82,7 +82,7 @@ export const {
   },
   pages: {
     signIn: "/login",
-    error: "/login", // Consider a dedicated auth error page e.g. /auth/error
+    error: "/auth/error", // Redirect to a custom error page
     signOut: "/login",
   },
   debug: process.env.NODE_ENV === "development",
@@ -133,14 +133,16 @@ export const {
         token.id = azureAdObjectId; // Store AAD OID as the primary ID in the JWT
 
         // Persist the OAuth access_token and other details to the token right after sign-in
+        // These are typically for calling other APIs (e.g., MS Graph) on behalf of the user.
         if (account.access_token) token.accessToken = account.access_token;
         if (account.refresh_token) token.refreshToken = account.refresh_token;
-        if (account.expires_at) token.accessTokenExpires = account.expires_at * 1000; // expires_at is in seconds
+        // account.expires_at is in seconds, convert to milliseconds for consistency with Date.now()
+        if (account.expires_at) token.accessTokenExpires = account.expires_at * 1000; 
 
         // Set initial name, email, picture from AAD profile, can be overridden by D365
-        token.name = user.name || profile?.name;
+        token.name = user.name || (profile as any)?.name; // profile might not have name directly typed
         token.email = user.email || (profile as any)?.email; // profile might not have email directly typed
-        token.picture = user.image || (profile as any)?.picture;
+        token.picture = user.image || (profile as any)?.picture; // profile might not have picture directly typed
 
         // Fetch D365 Contact details and roles
         try {
@@ -177,20 +179,30 @@ export const {
         }
       }
 
-      // Handle token refresh if applicable (this is a simplified check)
-      // For Entra ID, ID tokens are typically long-lived and refreshed via SSO.
-      // Access tokens for other resources (like Graph API) might need explicit refresh.
+      // TODO: Implement Entra ID access token refresh logic if token.accessToken is actively used.
+      // This is crucial if the accessToken is used for calling APIs like Microsoft Graph.
+      // The current Entra ID ID tokens are typically long-lived and refreshed via SSO.
+      // This placeholder addresses the refresh of the *access token* if it has a shorter lifespan.
       if (token.accessTokenExpires && Date.now() > token.accessTokenExpires) {
-        // If you have a refresh token and a mechanism to refresh it:
         if (token.refreshToken) {
-          console.log("Access token expired. Refresh mechanism placeholder.");
-          // TODO: Implement token refresh logic if needed for your scenario.
-          // For now, just mark an error.
-          // Example: token.error = "RefreshAccessTokenError";
-          // return { ...token, error: "RefreshAccessTokenError" };
+          console.log("Access token expired. Attempting refresh (placeholder)...");
+          // Example structure for token refresh:
+          // try {
+          //   const refreshedTokens = await refreshAccessToken(token.refreshToken); // Implement this function
+          //   token.accessToken = refreshedTokens.access_token;
+          //   token.accessTokenExpires = Date.now() + refreshedTokens.expires_in * 1000;
+          //   token.refreshToken = refreshedTokens.refresh_token ?? token.refreshToken; // Fallback to old refresh token
+          //   delete token.error; // Clear previous errors
+          // } catch (refreshError) {
+          //   console.error("Error refreshing access token:", refreshError);
+          //   token.error = "RefreshAccessTokenError";
+          //   // Potentially sign out the user or restrict access
+          // }
+          // For now, just mark an error as a reminder if refresh is not implemented.
+           token.error = token.error || "RefreshAccessTokenError"; // Keep existing error or add new one
         } else {
-          // No refresh token, session might be invalid for operations requiring fresh access token
           console.warn("Access token expired, but no refresh token available.");
+          token.error = token.error || "MissingRefreshTokenError";
         }
       }
       return token;

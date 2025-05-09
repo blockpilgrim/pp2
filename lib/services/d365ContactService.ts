@@ -8,12 +8,20 @@ export interface AppContactProfile {
   email?: string;
   roles: UserRole[]; // Application-specific roles from D365
   // Add other relevant profile fields from D365 as needed
-  // e.g., companyName?: string; phoneNumber?: string;
+  // e.g., companyName?: string; phoneNumber?: string; jobTitle?: string;
 }
 
 export class D365ContactService {
   private static readonly AAD_OBJECT_ID_FIELD = process.env.DATAVERSE_CONTACT_AAD_OBJECT_ID_FIELD;
   private static readonly APP_ROLES_FIELD = process.env.DATAVERSE_CONTACT_APP_ROLES_FIELD;
+  // Define D365 field names for updatable profile attributes
+  // These should correspond to the logical names of the fields in your Contact entity
+  private static readonly D365_FIRSTNAME_FIELD = "firstname";
+  private static readonly D365_LASTNAME_FIELD = "lastname";
+  private static readonly D365_EMAIL_FIELD = "emailaddress1";
+  // Add other D365 field names here if you expand AppContactProfile for updates
+  // private static readonly D365_JOBTITLE_FIELD = "jobtitle";
+
 
   /**
    * Fetches a Contact from D365 based on Azure AD Object ID.
@@ -32,10 +40,11 @@ export class D365ContactService {
     try {
       const selectFields = [
         "contactid", 
-        "firstname", 
-        "lastname", 
-        "emailaddress1", 
+        this.D365_FIRSTNAME_FIELD, 
+        this.D365_LASTNAME_FIELD, 
+        this.D365_EMAIL_FIELD, 
         this.APP_ROLES_FIELD 
+        // Add other fields like D365_JOBTITLE_FIELD if needed for the profile
       ];
       
       const contacts = await d365Client.getContacts({
@@ -48,10 +57,11 @@ export class D365ContactService {
         const d365Contact = contacts[0];
         const appProfile: AppContactProfile = {
           contactId: d365Contact.contactid!, 
-          firstName: d365Contact.firstname,
-          lastName: d365Contact.lastname,
-          email: d365Contact.emailaddress1, 
-          roles: this.mapD365RolesToAppRoles(d365Contact[this.APP_ROLES_FIELD]), 
+          firstName: d365Contact[this.D365_FIRSTNAME_FIELD],
+          lastName: d365Contact[this.D365_LASTNAME_FIELD],
+          email: d365Contact[this.D365_EMAIL_FIELD], 
+          roles: this.mapD365RolesToAppRoles(d365Contact[this.APP_ROLES_FIELD]),
+          // jobTitle: d365Contact[this.D365_JOBTITLE_FIELD], // Example
         };
         console.log(`D365ContactService: Found contact profile for AAD OID ${azureAdObjectId}:`, appProfile);
         return appProfile;
@@ -67,7 +77,6 @@ export class D365ContactService {
 
   /**
    * Maps the role data retrieved from D365 to the application's UserRole enum.
-   * **ACTION REQUIRED: You MUST adapt this method based on how roles are stored in your D365 APP_ROLES_FIELD.**
    * 
    * @param d365RolesField The raw role data from the D365 Contact record's APP_ROLES_FIELD.
    * @returns An array of UserRole.
@@ -143,17 +152,29 @@ export class D365ContactService {
 
   /**
    * Updates a Contact's profile in D365.
-   * Placeholder for actual implementation.
+   * Only updates fields that are provided in the data object.
+   * 
+   * @param contactId The D365 Contact ID.
+   * @param data A partial AppContactProfile containing fields to update.
+   * @returns A promise that resolves to true if successful, false otherwise.
    */
-  static async updateContactProfile(contactId: string, data: Partial<AppContactProfile>): Promise<boolean> {
+  static async updateContactProfile(contactId: string, data: Partial<Omit<AppContactProfile, 'contactId' | 'roles'>>): Promise<boolean> {
     console.log(`D365ContactService: Updating D365 Contact ${contactId} with data:`, data);
     try {
-      const d365UpdateData: any = {};
-      if (data.firstName !== undefined) d365UpdateData.firstname = data.firstName;
-      if (data.lastName !== undefined) d365UpdateData.lastname = data.lastName;
+      const d365UpdateData: Record<string, any> = {};
+
+      if (data.firstName !== undefined) d365UpdateData[this.D365_FIRSTNAME_FIELD] = data.firstName;
+      if (data.lastName !== undefined) d365UpdateData[this.D365_LASTNAME_FIELD] = data.lastName;
+      if (data.email !== undefined) d365UpdateData[this.D365_EMAIL_FIELD] = data.email;
       // Add other fields from AppContactProfile to d365UpdateData as needed
-      // For example, if you add companyName to AppContactProfile and want to update it:
-      // if (data.companyName !== undefined) d365UpdateData.yourd365fieldforcompanyname = data.companyName;
+      // For example, if you add jobTitle to AppContactProfile and want to update it:
+      // if (data.jobTitle !== undefined) d365UpdateData[this.D365_JOBTITLE_FIELD] = data.jobTitle;
+
+      // Do not proceed if there's nothing to update
+      if (Object.keys(d365UpdateData).length === 0) {
+        console.log(`D365ContactService: No fields to update for contact ${contactId}.`);
+        return true; // Or false, depending on desired behavior for no-op
+      }
 
       await d365Client.updateContact(contactId, d365UpdateData);
       console.log(`D365ContactService: Successfully updated contact ${contactId}.`);
