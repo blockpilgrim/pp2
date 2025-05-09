@@ -81,8 +81,10 @@ export class D365Client {
 
       if (!result.success) {
         const formattedErrors = result.error.format();
+        // Log detailed errors to the server console for easier debugging
+        console.error('❌ Invalid Dataverse environment configuration in d365Client.ts. Details:', formattedErrors);
         throw new DataverseError(
-          'Invalid Dataverse environment configuration',
+          'Invalid Dataverse environment configuration. Check server logs for details.',
           DataverseErrorType.CONFIGURATION,
           400,
           formattedErrors
@@ -94,8 +96,10 @@ export class D365Client {
       if (error instanceof DataverseError) {
         throw error;
       }
+      // Log the unexpected error during validation
+      console.error('❌ Unexpected error during Dataverse configuration validation:', error);
       throw new DataverseError(
-        'Failed to validate Dataverse configuration',
+        'Failed to validate Dataverse configuration due to an unexpected error. Check server logs.',
         DataverseErrorType.CONFIGURATION
       );
     }
@@ -128,8 +132,9 @@ export class D365Client {
 
       if (!tokenResponse.ok) {
         const errText = await tokenResponse.text();
+        console.error(`❌ Failed to obtain Dataverse access token. Status: ${tokenResponse.status}. Response: ${errText}`);
         throw new DataverseError(
-          'Failed to obtain Dataverse access token',
+          'Failed to obtain Dataverse access token. Check server logs for details.',
           DataverseErrorType.AUTHENTICATION,
           tokenResponse.status,
           errText
@@ -151,8 +156,9 @@ export class D365Client {
       if (error instanceof DataverseError) {
         throw error;
       }
+      console.error('❌ Exception during Dataverse token fetch:', error);
       throw new DataverseError(
-        'Failed to fetch Dataverse token',
+        'Failed to fetch Dataverse token due to an exception. Check server logs.',
         DataverseErrorType.AUTHENTICATION
       );
     }
@@ -208,8 +214,9 @@ export class D365Client {
       // Handle non-success responses
       if (!response.ok) {
         const errText = await response.text();
+        console.error(`❌ Dataverse API request failed. URL: ${url}, Method: ${options.method || 'GET'}, Status: ${response.status}. Response: ${errText}`);
         throw new DataverseError(
-          `Dataverse API request failed with status ${response.status}`,
+          `Dataverse API request failed with status ${response.status}. Check server logs for details.`,
           DataverseErrorType.RESPONSE,
           response.status,
           errText
@@ -217,20 +224,26 @@ export class D365Client {
       }
 
       // Parse JSON response
+      // Handle cases where response might be empty (e.g., 204 No Content for PATCH/DELETE)
+      if (response.status === 204) {
+        return undefined as T; // Or an appropriate representation for no content
+      }
       const data = await response.json();
       return data as T;
     } catch (error) {
       if (error instanceof DataverseError) {
         throw error;
       }
-      if (error instanceof TypeError || error instanceof Error) {
+      // Log other types of errors that might occur during the request process
+      console.error(`❌ Unexpected error during Dataverse request. URL: ${options.method || 'GET'} ${endpoint}. Error:`, error);
+      if (error instanceof TypeError || (error instanceof Error && error.message.includes('fetch'))) { // More specific check for fetch-related network errors
         throw new DataverseError(
-          `Network error: ${error.message}`,
+          `Network error during Dataverse request: ${error.message}. Check server logs.`,
           DataverseErrorType.NETWORK
         );
       }
       throw new DataverseError(
-        'Unknown error occurred during Dataverse request',
+        'Unknown error occurred during Dataverse request. Check server logs.',
         DataverseErrorType.UNKNOWN
       );
     }
@@ -284,10 +297,15 @@ export class D365Client {
    * Updates an existing contact in Dataverse
    */
   async updateContact(contactId: string, contact: Record<string, any>) {
-    return this.request(`/api/data/v9.2/contacts(${contactId})`, {
+    // For PATCH operations, Dataverse typically returns 204 No Content on success.
+    // The request method handles 204 by returning undefined.
+    await this.request(`/api/data/v9.2/contacts(${contactId})`, {
       method: 'PATCH',
       body: contact,
     });
+    // You might want to return a boolean or the updated data (if API was changed to return it)
+    // For now, aligning with 204 No Content means no specific data is returned.
+    return true; 
   }
 
   /**
