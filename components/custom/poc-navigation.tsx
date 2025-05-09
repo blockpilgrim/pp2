@@ -8,13 +8,13 @@ import { cn } from '@/lib/utils';
 export function PocNavigation() {
   const pathname = usePathname();
   
+  // Updated navItems to reflect major POC modules
   const navItems = [
-    { name: "Overview", href: "/poc/ui" },
-    { name: "Components", href: "/poc/ui" },
-    { name: "Forms", href: "/poc/ui/forms" },
-    { name: "Data Display", href: "/poc/ui/data-display" },
-    { name: "Tables", href: "/poc/ui/tables" },
-    { name: "Theme", href: "/poc/ui/theme-switcher" },
+    { name: "Core POC", href: "/poc/core" },
+    { name: "Auth POC", href: "/poc/auth" },
+    { name: "UI POC", href: "/poc/ui" },
+    { name: "BFF POC", href: "/poc/bff" },
+    // Future POCs like State Management and Leads Mini-App can be added here
   ];
 
   return (
@@ -28,11 +28,14 @@ export function PocNavigation() {
             <nav className="flex space-x-4">
               {navItems.map((item) => (
                 <Link
-                  key={item.name} // Changed from item.href to item.name
+                  key={item.name} 
                   href={item.href}
                   className={cn(
                     "px-3 py-1 rounded-md text-sm transition-colors",
-                    pathname === item.href
+                    // Check if the current pathname starts with the item's href
+                    // This handles active state for parent POC routes (e.g., /poc/ui should be active for /poc/ui/forms)
+                    // For exact matches like /poc/bff, it will also work.
+                    pathname.startsWith(item.href)
                       ? "bg-primary text-primary-foreground"
                       : "hover:bg-muted-foreground/10"
                   )}
@@ -42,9 +45,7 @@ export function PocNavigation() {
               ))}
             </nav>
           </div>
-          <div className="text-sm text-muted-foreground">
-            UI Framework POC
-          </div>
+          {/* Removed the hardcoded "UI Framework POC" text to make the navigation more generic */}
         </div>
       </div>
     </div>
