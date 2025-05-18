@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
@@ -10,7 +11,7 @@ export default function UiShowcasePage() {
   const [activeSection, setActiveSection] = useState('overview');
 
   const Section = ({ id, title, children }: { id: string, title: string, children: React.ReactNode }) => (
-    <section id={id} className="mb-16">
+    <section id={id} className="mb-16 scroll-mt-24"> {/* Added scroll-mt for better scroll positioning with sticky nav */}
       <h2 className="text-2xl font-bold mb-6 pb-2 border-b">{title}</h2>
       {children}
     </section>
@@ -52,25 +53,36 @@ export default function UiShowcasePage() {
         <h1 className="text-xl font-bold mb-6">UI Components</h1>
         <nav className="space-y-1">
           {[
-            { id: 'overview', label: 'Overview' },
-            { id: 'buttons', label: 'Buttons' },
-            { id: 'inputs', label: 'Inputs' },
-            { id: 'cards', label: 'Cards' },
-            { id: 'dropdowns', label: 'Dropdowns' },
-            { id: 'theme', label: 'Theming' },
-          ].map((item) => (
-            <button
-              key={item.id}
-              onClick={() => scrollToSection(item.id)}
-              className={`block w-full text-left px-4 py-2 rounded-md ${
-                activeSection === item.id 
-                  ? 'bg-sidebar-accent text-sidebar-accent-foreground' 
-                  : 'hover:bg-sidebar-accent/50'
-              }`}
-            >
-              {item.label}
-            </button>
-          ))}
+            { id: 'overview', label: 'Overview', type: 'scroll' },
+            { id: 'buttons', label: 'Buttons', type: 'scroll' },
+            { id: 'inputs', label: 'Inputs', type: 'scroll' },
+            { id: 'cards', label: 'Cards', type: 'scroll' },
+            { id: 'dropdowns', label: 'Dropdowns', type: 'scroll' },
+            { id: 'theme', label: 'Theming', type: 'scroll' },
+            { id: 'theme-switcher', label: 'Theme Switcher Demo', type: 'link', href: '/poc/ui/theme-switcher' },
+          ].map((item) => {
+            const commonClasses = `block w-full text-left px-4 py-2 rounded-md`;
+            const activeClasses = activeSection === item.id && item.type === 'scroll' ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'hover:bg-sidebar-accent/50';
+            
+            if (item.type === 'link' && item.href) {
+              return (
+                <Link key={item.id} href={item.href} passHref legacyBehavior>
+                  <a className={`${commonClasses} ${activeClasses}`}>
+                    {item.label}
+                  </a>
+                </Link>
+              );
+            }
+            return (
+              <button
+                key={item.id}
+                onClick={() => scrollToSection(item.id)}
+                className={`${commonClasses} ${activeClasses}`}
+              >
+                {item.label}
+              </button>
+            );
+          })}
         </nav>
       </aside>
 

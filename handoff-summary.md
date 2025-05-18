@@ -258,7 +258,9 @@ These files are separated from the main handoff summary to optimize context wind
 
 ## Current Focus Area
 
-**Finalizing and Testing Dynamics 365 Integration for Authentication & Authorization POC.**
+Theme refinements
+
+<!-- **Finalizing and Testing Dynamics 365 Integration for Authentication & Authorization POC.**
 
 The current effort involves completing the integration of Dynamics 365 (D365) as the source of truth for user profile information and application-specific roles. Azure Active Directory (Azure AD) remains the primary authentication provider.
 
@@ -294,7 +296,7 @@ The current effort involves completing the integration of Dynamics 365 (D365) as
 4.  **Refine Error Handling (Post-Testing):**
     *   Implement more user-friendly display of session errors related to D365 integration (e.g., using toast notifications for `D365LookupFailed` or similar errors surfaced in `session.error`).
 
-*Last updated: 2025-05-11* 
+*Last updated: 2025-05-11*  -->
 
 ---
 
