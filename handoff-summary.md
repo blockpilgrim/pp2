@@ -31,25 +31,32 @@ The Partner Lead Management Portal V2.0 aims to replace the previous Power Pages
 
 ## Feature Checklist
 
-This checklist represents features organized by POC module, with each module focused on a specific technical concern. We will tackle these POC implementations in the order listed, with each building on the lessons learned from previous POCs.
+This checklist represents features organized by POC module, with each module focused on a specific technical concern. We will tackle these POC implementations in the order listed, with each building on the lessons learned from previous POCs. Security MVP baseline items are integrated within relevant POCs.
 
-### ✅ Foundation (Completed)
+### Foundation
 - [x] Project bootstrapped with Next.js App Router
 - [x] Basic authentication setup with Auth.js and Microsoft Entra ID
 - [x] Initial API route for Dataverse integration
 - [x] Basic UI components with shadcn/ui and Tailwind
+- [ ] **Security Baseline**: Implement foundational security headers (`X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY` or `SAMEORIGIN`, basic `Referrer-Policy`) in `next.config.js` or middleware.
 
-### ✅ Core Infrastructure POC (Completed)
+### Core Infrastructure POC
 - [x] Complete Dataverse client implementation (`lib/clients/d365Client.ts`)
 - [x] Set up proper environment variable configuration (including D365 connection details)
 - [x] Implement token management and caching strategy (within `d365Client.ts`)
 - [x] Create centralized error handling utilities (`lib/utils/error-handler.ts`, `DataverseError` in `d365Client.ts`)
 - [x] Add comprehensive API error responses (demonstrated in `d365Client.ts`)
+- [ ] **Security Baseline**: Implement robust server-side input validation (using Zod or similar) for all API route inputs to prevent common vulnerabilities (XSS, injection, etc.).
 - [x] Build working demo at `/poc/core` demonstrating data integration
+- [ ] **Security Baseline**: Conduct Dataverse Least Privilege Audit:
+    - [ ] Document permissions assigned to the application's service principal in D365.
+    - [ ] Confirm permissions adhere to the principle of least privilege for all Dataverse operations.
+- [ ] **Security Baseline**: Verify secure parameter handling for all Dataverse API calls originating from `d365Client.ts`.
+- [ ] **Security Baseline**: Test centralized error handling (`lib/utils/error-handler.ts`) to ensure no sensitive information (stack traces, detailed system paths) is leaked via API responses or logs accessible to users.
 
-**POC Goal**: Create a robust foundation for secure API communication that demonstrates clean separation of concerns and proper error handling.
+**POC Goal**: Create a robust foundation for secure API communication that demonstrates clean separation of concerns and proper error handling, including Dataverse integration adhering to the principle of least privilege.
 
-### 🔄 Authentication & Authorization POC (Refinement In Progress)
+### Authentication & Authorization POC (Refinement In Progress)
 - [x] Complete user authentication flow with session management via Azure AD
 - [x] Implement protected routes with middleware
 - [x] Add role-based access control (RBAC) demonstration (initial setup)
@@ -67,14 +74,16 @@ This checklist represents features organized by POC module, with each module foc
     - [ ] User exists in Azure AD and D365 (with roles correctly mapped).
     - [ ] User exists in Azure AD but not in D365 (or not linked).
     - [ ] Various D365 role configurations and error scenarios (e.g., API errors, malformed role data).
+- [ ] **Security Baseline**: Verify session cookie attributes (HttpOnly; Secure, typically default in prod; SameSite=Lax or Strict; appropriate expiry).
+- [ ] **Security Baseline**: Test session lifecycle thoroughly (e.g., proper invalidation on logout, session timeout behavior, handling of concurrent sessions if applicable).
 - [ ] Update UI components further to display D365-sourced profile information (e.g., on a dedicated profile page).
 - [ ] Adapt UI/UX based on `isD365User` status more broadly.
 - [ ] Refine error handling in auth flow for D365 integration issues (e.g., user-facing messages for `D365LookupFailed`).
 - [ ] Implement `updateContactProfile` in `D365ContactService` with actual D365 client call and test profile updates from the portal.
 
-**POC Goal**: Demonstrate secure authentication patterns using Azure AD, with user profile details and application-specific roles managed in Dynamics 365, and role-based access control integrated throughout the application.
+**POC Goal**: Demonstrate secure authentication patterns using Azure AD, with user profile details and application-specific roles managed in Dynamics 365, and role-based access control integrated throughout the application. Ensure robust and secure session management.
 
-### ✅ UI Framework & Design System POC (Completed)
+### UI Framework & Design System POC (Completed)
 - [x] Implement brand theming with Tailwind configuration (colors, spacing, typography)
 - [x] Create a comprehensive shadcn/ui component library inventory with customized variants
 - [x] Build a custom component showcase page demonstrating shadcn/ui theming and extensions
@@ -87,78 +96,88 @@ This checklist represents features organized by POC module, with each module foc
 
 **POC Goal**: Build a comprehensive UI toolkit that demonstrates consistent design patterns and responsive components, specifically highlighting the integration and customization of shadcn/ui with Tailwind CSS.
 
-### ✅ Backend-for-Frontend (BFF) Pattern POC (Completed)
+### Backend-for-Frontend (BFF) Pattern POC
 - [x] Implement secure API endpoints following the BFF pattern (See `/api/bff-poc/items`)
 - [x] Create examples of different API request types (GET, POST, PATCH) (Implemented in `/api/bff-poc/items/route.ts`)
 - [x] Demonstrate proper error handling and validation (Basic error handling and type checks in API routes)
 - [x] Implement authentication and authorization checks (Auth.js session checks in API routes)
 - [x] Build working demo at `/poc/bff` showing API interactions (Client-side UI at `/poc/bff` interacts with API)
+- [ ] **Security Baseline**: Implement robust server-side input validation (using Zod or similar) for all API route inputs to prevent common vulnerabilities (XSS, injection, etc.).
+- [ ] **Security Baseline**: Review all API responses to ensure no unintended sensitive data is exposed to the client-side.
 
-**POC Goal**: Demonstrate the Backend-for-Frontend architectural pattern using Next.js API routes to create a secure communication layer between the frontend and backend services.
+**POC Goal**: Demonstrate the Backend-for-Frontend architectural pattern using Next.js API routes to create a secure communication layer between the frontend and backend services, with comprehensive server-side input validation and minimized data exposure.
 
-### 📊 State Management & Data Handling POC
+### State Management & Data Handling POC
 - [ ] Configure Zustand store for global state management
 - [ ] Set up TanStack Query client with caching strategies
 - [ ] Implement React Query dev tools for debugging
-- [ ] Create data validation layer with Zod
+- [ ] Create data validation layer with Zod (ensure this primarily refers to client-side validation, with server-side being the authoritative source).
+- [ ] **Security Baseline**: Ensure all data mutations triggered from the client are subject to robust server-side input validation (as covered in BFF POC) before affecting state or backend systems.
 - [ ] Demonstrate optimistic updates pattern
 - [ ] Build working demo at `/poc/state` showing data flow
 
-**POC Goal**: Establish patterns for state management, data fetching, and validation that can be applied consistently across the application.
+**POC Goal**: Establish patterns for state management, data fetching, and validation that can be applied consistently across the application, emphasizing that server-side validation is paramount for security.
 
-### 📋 Lead Management Mini-App POC
+### Lead Management Mini-App POC
 - [ ] Implement lead listing page with pagination and filtering
 - [ ] Create lead detail view with related data
 - [ ] Build lead creation/edit form with validation
 - [ ] Add lead status management workflow
 - [ ] Implement basic reporting capabilities
 - [ ] Create demo at `/poc/leads` demonstrating end-to-end lead management journey
+- [ ] **Security Baseline**: Ensure comprehensive server-side input validation (using Zod) for all API endpoints related to lead management.
+- [ ] **Security Baseline**: Perform API endpoint security testing, specifically for Insecure Direct Object References (IDOR) and ensuring correct authorization logic for accessing and modifying lead data.
+- [ ] **Security Baseline**: Verify no sensitive data is unnecessarily exposed in lead management UI components or API responses beyond what is required for the user's role and context.
 
-**POC Goal**: Build a small but complete application that integrates all previous POCs to demonstrate a real business workflow.
+**POC Goal**: Build a small but complete application that integrates all previous POCs to demonstrate a real business workflow, with a strong emphasis on secure data handling, robust server-side validation, and role-based access control to lead data.
 
-### 🧪 Testing & Quality Assurance Standards
+### Testing & Quality Assurance Standards
 - [ ] Set up Jest for unit testing
 - [ ] Configure React Testing Library for component tests
 - [ ] Add Cypress for end-to-end testing (optional)
 - [ ] Implement type checking and linting standards
 - [ ] Create example tests for each POC module
+- [ ] **Security Baseline**: Review any new third-party scripts or services introduced during MVP development for security implications (e.g., supply chain risks, CSP compatibility).
+- [ ] **Security Baseline**: Document a basic checklist for security regression testing to be performed before releases.
 
-**Testing Goal**: Establish consistent testing patterns that can be applied across all POC modules.
+**Testing Goal**: Establish consistent testing patterns that can be applied across all POC modules, incorporating baseline security verification checks into the QA process.
 
-### 🚀 Deployment & Documentation
+### Deployment & Documentation
 - [ ] Set up deployment pipeline example
 - [ ] Create documentation for environment configuration
-- [ ] Document integration points between POCs 
+- [ ] Document integration points between POCs
 - [ ] Establish code standards and contribution guidelines
+- [ ] **Security Baseline**: Confirm foundational security headers are correctly implemented and verified in the deployed environment(s).
 
-**Documentation Goal**: Ensure each POC is well-documented with clear integration guidance.
+**Documentation Goal**: Ensure each POC is well-documented with clear integration guidance, and deployment considerations include verification of security basics.
 
 ## Development Approach
 
 ### Modular POC Approach with Integration Path
 
-After careful consideration, we've decided to pursue focused Proof-of-Concept (POC) modules rather than a single comprehensive prototype. This approach offers several advantages:
+After careful consideration, we've decided to pursue focused Proof-of-Concept (POC) modules rather than a single comprehensive prototype. This approach allows for dedicated attention to specific technical challenges, including the systematic integration and verification of security requirements at each stage. It offers several advantages:
 
 - **Focused demonstration** of specific technical challenges
-- **Faster validation** of key technologies and patterns
+- **Faster validation** of key technologies and patterns (including security controls)
 - **Easier team review** of isolated concerns
 - **Reduced complexity** in each development cycle
 - **Clearer technical boundaries** between components
 
 Each POC will be developed as a standalone module with clear integration points and documentation:
 
-1. **Core Infrastructure POC**: Dataverse client, token management, error handling
-2. **Authentication POC**: Complete auth flows, RBAC implementation (D365 integration)
-3. **UI Framework POC**: Component system, theming, layouts
-4. **Backend-for-Frontend (BFF) POC**: API endpoints, request/response handling
-5. **State Management POC**: Global state, data fetching, caching
-6. **Lead Management Mini-App**: Integration of all previous POCs
+1.  **Core Infrastructure POC**: Dataverse client, token management, error handling, initial security verifications
+2.  **Authentication POC**: Complete auth flows, RBAC implementation (D365 integration), session security
+3.  **UI Framework POC**: Component system, theming, layouts
+4.  **Backend-for-Frontend (BFF) POC**: API endpoints, request/response handling, server-side validation
+5.  **State Management POC**: Global state, data fetching, caching, secure data flow
+6.  **Lead Management Mini-App**: Integration of all previous POCs, end-to-end security validation
 
 Each POC will include:
 - Independent deployment capabilities
 - Integration documentation
 - Consistent patterns and libraries
-- Minimal but sufficient test coverage
+- Verification of relevant Security Baseline items as defined in the Feature Checklist
+- Minimal but sufficient functional test coverage
 
 This approach enables targeted demonstrations while maintaining a clear path to integration when ready to build the comprehensive solution.
 
@@ -174,10 +193,10 @@ To ensure consistency across POCs and facilitate future integration, we'll follo
 - `lib/`: Shared utilities and clients
   - `lib/clients/`: API clients (e.g., d365Client.ts)
   - `lib/services/`: Service classes abstracting business logic (e.g., `d365ContactService.ts`)
-  - `lib/utils/`: Helper functions
+  - `lib/utils/`: Helper functions (including validation and security utilities)
   - `lib/hooks/`: Custom React hooks
   - `lib/types/`: TypeScript interfaces and types
-  - `lib/config/`: Configuration (e.g., environment variables)
+  - `lib/config/`: Configuration (e.g., environment variables, security headers if configured via code)
 - `components/`: UI components
   - `components/ui/`: Primitive UI components (from shadcn/ui)
   - `components/custom/`: Domain-specific components (e.g., `poc-navigation.tsx`, `ui-poc-sub-navigation.tsx`)
@@ -186,6 +205,7 @@ To ensure consistency across POCs and facilitate future integration, we'll follo
   - `app/api/`: API routes using BFF pattern (e.g., `app/api/bff-poc/items/route.ts`)
   - `app/poc/`: POC demonstration pages (e.g., `app/poc/bff/page.tsx`)
 - `styles/`: Global styles and theming
+- `middleware.ts`: For handling protected routes and potentially some security headers.
 
 #### Naming Conventions
 - Files: kebab-case for general files (e.g., `error-handler.ts`, `d365-contact-service.ts`)
@@ -220,12 +240,12 @@ NEXT_PUBLIC_API_URL=http://localhost:3000/api
 ```
 
 The development of each POC will follow this progression:
-1. Backend API implementation
-2. Data fetching and state management
+1. Backend API implementation (including server-side validation and security considerations from the outset)
+2. Data fetching and state management (ensuring secure data flow and handling)
 3. UI components and interactions
-4. Minimal testing and validation
+4. Functional testing, validation, and verification of all applicable Security Baseline items
 
-This methodical approach ensures that at each stage, we have working functionality that can be demonstrated and validated.
+This methodical approach ensures that at each stage, we have working functionality that can be demonstrated, validated, and confirmed against security requirements.
 
 ## Session Planning Guide
 
@@ -238,7 +258,7 @@ This section provides guidance for structuring productive AI conversations to de
 4. **Implementation Strategy**: Discuss approach before diving into code
 5. **Code Implementation**: Develop the feature while explaining key decisions
 6. **Review & Refine**: Evaluate the implementation against guiding principles
-7. **Document**: Update BOTH the Decisions Log (./decisions-log.md) and Technical Debt document (./technical-debt.md) when completing a POC (this is critical for maintaining clear documentation)
+7. **Document**: Update Feature Checklist progress as we go. Update BOTH the Decisions Log (./decisions-log.md) and Technical Debt document (./technical-debt.md) when completing a POC
 
 ### Tips for Effective AI Sessions
 - Focus on one conceptual area per conversation
