@@ -132,11 +132,12 @@ This checklist represents features organized by POC module, with each module foc
 **POC Goal**: Build a small but complete application that integrates all previous POCs to demonstrate a real business workflow, with a strong emphasis on secure data handling, robust server-side validation, and role-based access control to lead data.
 
 ### Testing & Quality Assurance Standards
-- [ ] Set up Jest for unit testing
-- [ ] Configure React Testing Library for component tests
+- [x] Set up Vitest for unit testing
+- [ ] Configure React Testing Library for component tests (to be used with Vitest)
 - [ ] Add Cypress for end-to-end testing (optional)
 - [ ] Implement type checking and linting standards
 - [ ] Create example tests for each POC module
+- Available test scripts: `npm test` (run all tests), `npm run test:ui` (interactive UI), `npm run test:watch` (watch mode).
 - [ ] **Security Baseline**: Review any new third-party scripts or services introduced during MVP development for security implications (e.g., supply chain risks, CSP compatibility).
 - [ ] **Security Baseline**: Document a basic checklist for security regression testing to be performed before releases.
 

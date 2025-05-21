@@ -19,6 +19,7 @@
         "name": "next"
       }
     ],
+    "types": ["node", "react", "@types/react", "@types/react-dom", "vitest/globals"],
     "paths": {
       "@/*": ["./*"]
     }
