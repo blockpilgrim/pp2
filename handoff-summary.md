@@ -146,6 +146,37 @@ This checklist represents features organized by POC module, with each module foc
 - [ ] **Security Baseline**: Review any new third-party scripts or services introduced during MVP development for security implications (e.g., supply chain risks, CSP compatibility).
 - [ ] **Security Baseline**: Document a basic checklist for security regression testing to be performed before releases.
 
+#### Prioritized Unit Test Implementation
+
+Based on the implemented features and security-first principles, the following unit tests should be implemented in priority order:
+
+**🔴 Priority 1: Security & Authentication (Critical)**
+- [ ] `lib/clients/d365Client.ts` - Token acquisition/refresh, error handling, retry mechanism, secure parameter handling
+- [ ] `lib/services/d365ContactService.ts` - Contact lookup, role mapping (comma-separated parsing), error scenarios
+- [ ] `lib/auth.ts` - JWT/session callbacks with D365 integration, error handling, role assignment
+- [ ] `middleware.ts` - Protected route enforcement, session validation, redirect behavior
+
+**🟠 Priority 2: Core Infrastructure**
+- [ ] `lib/utils/token-cache.ts` - Token storage/retrieval, expiration handling, cache invalidation
+- [ ] `lib/utils/error-handler.ts` - Error categorization, sensitive data sanitization, client-safe messages
+- [ ] `lib/config/env.ts` - Environment variable validation, required vs optional configs
+
+**🟡 Priority 3: API Routes (BFF Pattern)**
+- [ ] `app/api/bff-poc/items/route.ts` - Authentication checks, input validation, CRUD operations
+- [ ] `app/api/leads/route.ts` - Lead operations, authorization logic, Dataverse integration
+
+**🟢 Priority 4: Utilities & Helpers**
+- [ ] `lib/utils/auth-utils.ts` - Helper function behavior and edge cases
+- [ ] `lib/utils.ts` - Utility function correctness and type safety
+- [ ] `lib/queryClient.ts` - React Query configuration and cache settings
+
+**Test Implementation Guidelines:**
+- Focus on business logic, not implementation details
+- Test error scenarios thoroughly
+- Ensure no sensitive data leaks in tests
+- Mock external dependencies (Azure AD, D365)
+- Follow the project's [Vitest Guidelines](./vitest-guidelines.md)
+
 **Testing Goal**: Establish and maintain a comprehensive testing strategy that ensures code quality, stability, and maintainability, aligning with our core principles (Security, Stability, Scalability, Maintainability, Knowledge Sharing, Clarity, Simplicity, Modern Best Practices). This includes robust unit tests for business logic and utilities, component tests for UI interactions, and a plan for future integration and end-to-end testing. All tests should be clear, easy to understand, and contribute to a reliable and secure application. Refer to the [Vitest Testing Framework: Guidelines and Best Practices](./vitest-guidelines.md) for detailed guidance.
 
 ### Deployment & Documentation
