@@ -132,17 +132,12 @@ This checklist represents features organized by POC module, with each module foc
 **POC Goal**: Build a small but complete application that integrates all previous POCs to demonstrate a real business workflow, with a strong emphasis on secure data handling, robust server-side validation, and role-based access control to lead data.
 
 ### Testing & Quality Assurance Standards
-
-- [x] Set up Vitest for unit testing with React, path aliases (`@/`), and coverage reporting (v8 provider, text/json/html reporters). ([See Vitest Guidelines](./vitest-guidelines.md))
-- [ ] Configure React Testing Library for component tests (to be used with Vitest for testing component interactions and rendering).
-- [ ] Add Cypress for end-to-end testing (consideration for later project phases).
-- [x] Implement type checking (TypeScript) and linting standards (ESLint). (Assuming linting is also set up based on typical Next.js projects and `eslint.config.mjs` presence)
-- [x] Create initial example unit tests for utility functions (`lib/utils/example-utils.test.ts`).
-- [ ] Expand test coverage with example tests for each POC module as they are developed.
-- **Available test scripts** (from `package.json`):
-    - `npm run test`: Runs all tests once (Vitest run).
-    - `npm run test:ui`: Starts Vitest with its interactive UI.
-    - `npm run test:watch`: Runs tests in watch mode.
+- [x] Set up Vitest for unit testing
+- [ ] Configure React Testing Library for component tests (to be used with Vitest)
+- [ ] Add Cypress for end-to-end testing (optional)
+- [ ] Implement type checking and linting standards
+- [ ] Create example tests for each POC module
+- Available test scripts: `npm test` (run all tests), `npm run test:ui` (interactive UI), `npm run test:watch` (watch mode).
 - [ ] **Security Baseline**: Review any new third-party scripts or services introduced during MVP development for security implications (e.g., supply chain risks, CSP compatibility).
 - [ ] **Security Baseline**: Document a basic checklist for security regression testing to be performed before releases.
 
@@ -178,6 +173,9 @@ Based on the implemented features and security-first principles, the following u
 - Follow the project's [Vitest Guidelines](./vitest-guidelines.md)
 
 **Testing Goal**: Establish and maintain a comprehensive testing strategy that ensures code quality, stability, and maintainability, aligning with our core principles (Security, Stability, Scalability, Maintainability, Knowledge Sharing, Clarity, Simplicity, Modern Best Practices). This includes robust unit tests for business logic and utilities, component tests for UI interactions, and a plan for future integration and end-to-end testing. All tests should be clear, easy to understand, and contribute to a reliable and secure application. Refer to the [Vitest Testing Framework: Guidelines and Best Practices](./vitest-guidelines.md) for detailed guidance.
+=======
+**Testing Goal**: Establish consistent testing patterns that can be applied across all POC modules, incorporating baseline security verification checks into the QA process.
+>>>>>>> 1e8588d (Revert "```")
 
 ### Deployment & Documentation
 - [ ] Set up deployment pipeline example
@@ -214,7 +212,7 @@ Each POC will include:
 - Integration documentation
 - Consistent patterns and libraries
 - Verification of relevant Security Baseline items as defined in the Feature Checklist
-- Minimal but sufficient unit and component test coverage, following the guidelines in [Vitest Testing Framework: Guidelines and Best Practices](./vitest-guidelines.md).
+- Minimal but sufficient functional test coverage
 
 This approach enables targeted demonstrations while maintaining a clear path to integration when ready to build the comprehensive solution.
 
@@ -310,7 +308,6 @@ This section provides guidance for structuring productive AI conversations to de
 
 - [Decisions Log](./decisions-log.md) - Documentation of architectural and implementation decisions
 - [Technical Debt Tracking](./technical-debt.md) - Known technical debt items and remediation plans
-- [Vitest Testing Framework: Guidelines and Best Practices](./vitest-guidelines.md) - Detailed guide for writing tests.
 
 These files are separated from the main handoff summary to optimize context window usage during AI pairing sessions. Reference them as needed for detailed architectural discussions or when addressing technical debt.
 
