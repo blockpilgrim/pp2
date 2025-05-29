@@ -16,6 +16,7 @@ export function PocNavigation() {
     { name: "Auth POC", href: "/poc/auth" },
     { name: "UI POC", href: "/poc/ui" },
     { name: "BFF POC", href: "/poc/bff" },
+    { name: "State & Data", href: "/poc/state" }, // Added new link
     // Future POCs like State Management and Leads Mini-App can be added here
   ];
 
