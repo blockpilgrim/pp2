@@ -78,10 +78,10 @@ This checklist represents features organized by POC module, with each module foc
     - [ ] Various D365 role configurations and error scenarios (e.g., API errors, malformed role data).
 - [ ] **Security Baseline**: Verify session cookie attributes (HttpOnly; Secure, typically default in prod; SameSite=Lax or Strict; appropriate expiry).
 - [ ] **Security Baseline**: Test session lifecycle thoroughly (e.g., proper invalidation on logout, session timeout behavior, handling of concurrent sessions if applicable).
-- [ ] Update UI components further to display D365-sourced profile information (e.g., on a dedicated profile page).
+- [x] Update UI components further to display D365-sourced profile information (e.g., on a dedicated profile page).
 - [ ] Adapt UI/UX based on `isD365User` status more broadly.
 - [ ] Refine error handling in auth flow for D365 integration issues (e.g., user-facing messages for `D365LookupFailed`).
-- [ ] Implement `updateContactProfile` in `D365ContactService` with actual D365 client call and test profile updates from the portal.
+- [x] Implement `updateContactProfile` in `D365ContactService` with actual D365 client call and test profile updates from the portal.
 
 **POC Goal**: Demonstrate secure authentication patterns using Azure AD, with user profile details and application-specific roles managed in Dynamics 365, and role-based access control integrated throughout the application. Ensure robust and secure session management.
 

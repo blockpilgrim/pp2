@@ -88,7 +88,10 @@ export function PocNavigation() {
 
             {status === "authenticated" && session?.user && (
               <>
-                <div className="flex flex-col items-end mr-4">
+                <Link 
+                  href="/profile"
+                  className="flex flex-col items-end mr-4 hover:opacity-80 transition-opacity"
+                >
                   <span className="text-sm">
                     Welcome, {session.user.name || 'User'}
                     {session.user.isD365User === false && ( // Explicitly check for false
@@ -113,11 +116,9 @@ export function PocNavigation() {
                       {session.user.states.map(state => getStateDisplayName(state)).join(', ')}
                     </span>
                   )}
-
-                </div>
+                </Link>
                 <Button variant="outline" size="sm" onClick={() => signOut({ callbackUrl: '/' })} className="text-nav-foreground border-nav-foreground hover:bg-nav-foreground hover:text-nav">
                   Sign Out
-
                 </Button>
               </>
             )}

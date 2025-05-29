@@ -305,6 +305,28 @@ Implications:
 - Codebase related to theme management is significantly simplified.
 ```
 
+```
+Decision: Profile Data Fetching Strategy to Bypass Session Cache
+Problem: After updating profile data in D365, the changes were visible immediately but on browser refresh, old cached session data was displayed despite D365 having the updated values.
+Options:
+- Force session refresh after D365 updates (complex, might require re-authentication)
+- Always fetch fresh data from D365 on profile page load
+- Implement complex session update mechanisms
+- Use only client-side data fetching for profile page
+Decision: Implemented client-side fresh data fetching on profile page mount, bypassing the stale session cache
+Rationale:
+- Simplicity: No complex session manipulation required
+- Stability: Always shows current D365 data
+- Clarity: Clear data flow from D365 → API → UI
+- Security: Still requires authentication via middleware
+- User Experience: Added manual refresh button for user control
+Implications:
+- Profile page always shows latest D365 data
+- Small performance trade-off for accuracy (one extra API call on page load)
+- Session data remains stale but profile page bypasses it
+- Pattern can be applied to other pages needing fresh D365 data
+```
+
 ## Adding New Decisions
 
 To add a new decision to this log, follow this template:

@@ -6,10 +6,10 @@ export interface AppContactProfile {
   firstName?: string;
   lastName?: string;
   email?: string;
+  phoneNumber?: string;
   roles: UserRole[]; // Application-specific roles from D365
   states?: string[]; // State assignments from D365 (e.g., ["arkansas", "tennessee"])
-  // Add other relevant profile fields from D365 as needed
-  // e.g., companyName?: string; phoneNumber?: string; jobTitle?: string;
+  portalRolesRaw?: string; // Raw portal roles string for display/editing
 }
 
 export class D365ContactService {
@@ -20,8 +20,7 @@ export class D365ContactService {
   private static readonly D365_FIRSTNAME_FIELD = "firstname";
   private static readonly D365_LASTNAME_FIELD = "lastname";
   private static readonly D365_EMAIL_FIELD = "emailaddress1";
-  // Add other D365 field names here if you expand AppContactProfile for updates
-  // private static readonly D365_JOBTITLE_FIELD = "jobtitle";
+  private static readonly D365_PHONE_FIELD = "telephone1";
 
 
   /**
@@ -43,9 +42,9 @@ export class D365ContactService {
         "contactid", 
         this.D365_FIRSTNAME_FIELD, 
         this.D365_LASTNAME_FIELD, 
-        this.D365_EMAIL_FIELD, 
+        this.D365_EMAIL_FIELD,
+        this.D365_PHONE_FIELD, 
         this.APP_ROLES_FIELD 
-        // Add other fields like D365_JOBTITLE_FIELD if needed for the profile
       ];
       
       const contacts = await d365Client.getContacts({
@@ -61,10 +60,11 @@ export class D365ContactService {
           contactId: d365Contact.contactid!, 
           firstName: d365Contact[this.D365_FIRSTNAME_FIELD],
           lastName: d365Contact[this.D365_LASTNAME_FIELD],
-          email: d365Contact[this.D365_EMAIL_FIELD], 
+          email: d365Contact[this.D365_EMAIL_FIELD],
+          phoneNumber: d365Contact[this.D365_PHONE_FIELD], 
           roles: rolesAndStates.roles,
           states: rolesAndStates.states,
-          // jobTitle: d365Contact[this.D365_JOBTITLE_FIELD], // Example
+          portalRolesRaw: d365Contact[this.APP_ROLES_FIELD], // Store raw value for editing
         };
         console.log(`D365ContactService: Found contact profile for AAD OID ${azureAdObjectId}:`, appProfile);
         return appProfile;
@@ -217,7 +217,10 @@ export class D365ContactService {
    * @param data A partial AppContactProfile containing fields to update.
    * @returns A promise that resolves to true if successful, false otherwise.
    */
-  static async updateContactProfile(contactId: string, data: Partial<Omit<AppContactProfile, 'contactId' | 'roles'>>): Promise<boolean> {
+  static async updateContactProfile(
+    contactId: string, 
+    data: Partial<Omit<AppContactProfile, 'contactId' | 'roles' | 'states'>>
+  ): Promise<boolean> {
     console.log(`D365ContactService: Updating D365 Contact ${contactId} with data:`, data);
     try {
       const d365UpdateData: Record<string, any> = {};
@@ -225,9 +228,8 @@ export class D365ContactService {
       if (data.firstName !== undefined) d365UpdateData[this.D365_FIRSTNAME_FIELD] = data.firstName;
       if (data.lastName !== undefined) d365UpdateData[this.D365_LASTNAME_FIELD] = data.lastName;
       if (data.email !== undefined) d365UpdateData[this.D365_EMAIL_FIELD] = data.email;
-      // Add other fields from AppContactProfile to d365UpdateData as needed
-      // For example, if you add jobTitle to AppContactProfile and want to update it:
-      // if (data.jobTitle !== undefined) d365UpdateData[this.D365_JOBTITLE_FIELD] = data.jobTitle;
+      if (data.phoneNumber !== undefined) d365UpdateData[this.D365_PHONE_FIELD] = data.phoneNumber;
+      if (data.portalRolesRaw !== undefined) d365UpdateData[this.APP_ROLES_FIELD] = data.portalRolesRaw;
 
       // Do not proceed if there's nothing to update
       if (Object.keys(d365UpdateData).length === 0) {

@@ -20,8 +20,10 @@ declare module "next-auth" {
       name?: string | null;
       email?: string | null;
       image?: string | null;
+      phoneNumber?: string | null;
       roles?: UserRole[]; // Roles sourced from D365
       states?: string[]; // State assignments from D365
+      portalRolesRaw?: string; // Raw portal roles string for display/editing
       d365Profile?: Partial<AppContactProfile>; // To store parts of the D365 profile
       isD365User?: boolean; // Flag to indicate if a D365 contact was successfully linked
     };
@@ -42,6 +44,8 @@ declare module "next-auth/jwt" {
     contactId?: string; // D365 Contact ID
     roles?: UserRole[]; // Roles sourced from D365
     states?: string[]; // State assignments from D365
+    portalRolesRaw?: string; // Raw portal roles string
+    phoneNumber?: string;
     d365Profile?: Partial<AppContactProfile>;
     isD365User?: boolean;
 
@@ -154,11 +158,15 @@ export const {
             token.contactId = contactProfile.contactId;
             token.roles = contactProfile.roles; // Roles from D365 take precedence
             token.states = contactProfile.states; // State assignments from D365
+            token.portalRolesRaw = contactProfile.portalRolesRaw; // Raw portal roles string
+            token.phoneNumber = contactProfile.phoneNumber;
             token.d365Profile = { // Store relevant D365 profile info
               firstName: contactProfile.firstName,
               lastName: contactProfile.lastName,
               email: contactProfile.email,
+              phoneNumber: contactProfile.phoneNumber,
               states: contactProfile.states,
+              portalRolesRaw: contactProfile.portalRolesRaw,
             };
             token.isD365User = true;
 
@@ -219,11 +227,14 @@ export const {
       if (token.contactId) session.user.contactId = token.contactId;
       if (token.roles) session.user.roles = token.roles;
       if (token.states) session.user.states = token.states;
+      if (token.portalRolesRaw) session.user.portalRolesRaw = token.portalRolesRaw;
+      if (token.phoneNumber) session.user.phoneNumber = token.phoneNumber;
       if (token.d365Profile) {
         session.user.d365Profile = token.d365Profile;
         // Ensure session name/email reflect D365 profile if available
         session.user.name = token.d365Profile.firstName ? `${token.d365Profile.firstName} ${token.d365Profile.lastName || ''}`.trim() : token.name;
         session.user.email = token.d365Profile.email || token.email;
+        session.user.phoneNumber = token.d365Profile.phoneNumber || token.phoneNumber;
       } else {
         // Fallback to token's name/email if d365Profile is not set
         session.user.name = token.name;
