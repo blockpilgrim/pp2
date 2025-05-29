@@ -72,13 +72,13 @@ export function PocNavigation() {
                   )}
                 </span>
                 <Button variant="outline" size="sm" onClick={() => signOut({ callbackUrl: '/' })}>
-                  Sign Out
+                  Log out
                 </Button>
               </>
             )}
             {status === "unauthenticated" && (
                <Button variant="outline" size="sm" asChild>
-                 <Link href="/login">Sign In</Link>
+                 <Link href="/login">Log in</Link>
                </Button>
             )}
           </div>
