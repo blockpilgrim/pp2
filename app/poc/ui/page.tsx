@@ -59,7 +59,6 @@ export default function UiShowcasePage() {
             { id: 'cards', label: 'Cards', type: 'scroll' },
             { id: 'dropdowns', label: 'Dropdowns', type: 'scroll' },
             { id: 'theme', label: 'Theming', type: 'scroll' },
-            { id: 'theme-switcher', label: 'Theme Switcher Demo', type: 'link', href: '/poc/ui/theme-switcher' },
           ].map((item) => {
             const commonClasses = `block w-full text-left px-4 py-2 rounded-md`;
             const activeClasses = activeSection === item.id && item.type === 'scroll' ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'hover:bg-sidebar-accent/50';

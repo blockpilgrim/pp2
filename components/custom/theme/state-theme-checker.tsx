@@ -1,97 +1,42 @@
 "use client";
 
+"use client";
+
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useTheme } from '@/components/ui/theme/theme-provider';
-import { getDefaultThemeFromStates, getStateDisplayName } from '@/lib/utils/state-theme-mapping';
-import { Theme } from '@/components/ui/theme/theme-provider';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
+import { getDefaultThemeFromStates } from '@/lib/utils/state-theme-mapping';
+import { Theme } from '@/components/ui/theme/theme-provider'; // Theme type might still be needed if used directly
 
 /**
- * Component that checks if user's state assignment suggests a different theme
- * and offers to switch to the state-specific theme
+ * Component that automatically sets the theme based on the user's state assignment
+ * on their first login, if no explicit theme choice has been made.
  */
 export function StateThemeChecker() {
-  const { data: session } = useSession();
-  const { theme, setTheme } = useTheme();
-  const [showSuggestion, setShowSuggestion] = useState(false);
-  const [suggestedTheme, setSuggestedTheme] = useState<Theme | null>(null);
-  const [suggestedState, setSuggestedState] = useState<string | null>(null);
-  const [hasChecked, setHasChecked] = useState(false);
-  const [hasDeclined, setHasDeclined] = useState(false);
-
-  // Check if user has declined on mount (client-side only)
-  useEffect(() => {
-    if (typeof window !== 'undefined' && sessionStorage.getItem('theme-suggestion-declined') === 'true') {
-      setHasDeclined(true);
-    }
-  }, []);
+  const { data: session, status } = useSession();
+  const { theme, setTheme } = useTheme(); // Get current theme to compare
 
   useEffect(() => {
-    // Only check once per session when user logs in
-    if (!session?.user?.states || hasChecked || hasDeclined) {
+    // Ensure session is loaded and user has states defined
+    if (status !== 'authenticated' || !session?.user?.states || session.user.states.length === 0) {
       return;
     }
 
+    // Determine the theme based on D365 state
     const stateTheme = getDefaultThemeFromStates(session.user.states);
-    
-    // If user has a state theme and it's different from current theme
+
+    // Only apply the D365 state theme if it's different from the current theme.
+    // This check is still useful to avoid unnecessary setTheme calls if the theme is already correct.
     if (stateTheme && stateTheme !== theme) {
-      setSuggestedTheme(stateTheme);
-      setSuggestedState(session.user.states[0]); // Use first state for display
-      setShowSuggestion(true);
+      setTheme(stateTheme);
     }
-    
-    setHasChecked(true);
-  }, [session, theme, hasChecked, hasDeclined]);
+    // By removing 'theme' from the dependency array below, this effect will primarily run
+    // on session load/change. Manual theme changes will not immediately trigger this effect
+    // to revert the theme, allowing manual overrides to persist until the next session update
+    // or component re-mount that re-evaluates the session.
 
-  const handleAcceptSuggestion = () => {
-    if (suggestedTheme) {
-      setTheme(suggestedTheme);
-      // Also update via API to ensure cookie is set server-side
-      fetch('/api/theme', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ theme: suggestedTheme })
-      });
-    }
-    setShowSuggestion(false);
-  };
+  }, [session, status, setTheme]); // Removed 'theme' from dependencies
 
-  const handleDeclineSuggestion = () => {
-    setShowSuggestion(false);
-    setHasDeclined(true);
-    // Remember the user declined by setting a session storage flag
-    if (typeof window !== 'undefined') {
-      sessionStorage.setItem('theme-suggestion-declined', 'true');
-    }
-  };
-
-  // Don't show if user already declined in this session
-  if (hasDeclined) {
-    return null;
-  }
-
-  return (
-    <Dialog open={showSuggestion} onOpenChange={setShowSuggestion}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>State-Specific Theme Available</DialogTitle>
-          <DialogDescription>
-            We noticed you're associated with {suggestedState ? getStateDisplayName(suggestedState) : 'a state'} which has a custom theme. 
-            Would you like to switch to the {suggestedState ? getStateDisplayName(suggestedState) : 'state-specific'} theme?
-          </DialogDescription>
-        </DialogHeader>
-        <DialogFooter>
-          <Button variant="outline" onClick={handleDeclineSuggestion}>
-            Keep Current Theme
-          </Button>
-          <Button onClick={handleAcceptSuggestion}>
-            Switch Theme
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
+  // This component no longer renders any UI, it's purely for side-effects
+  return null;
 }

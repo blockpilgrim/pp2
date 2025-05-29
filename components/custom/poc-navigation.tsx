@@ -9,6 +9,7 @@ import { useTheme } from '@/components/ui/theme/theme-provider'; // Import useTh
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button'; // For Sign In/Out buttons
 import { getStateDisplayName } from '@/lib/utils/state-theme-mapping';
+import { StateThemeChecker } from '@/components/custom/theme/state-theme-checker'; // Added import
 
 export function PocNavigation() {
   const pathname = usePathname();
@@ -25,6 +26,7 @@ export function PocNavigation() {
 
   return (
     <div className="bg-nav text-nav-foreground py-2 mb-6 border-b border-gray-700 sticky top-0 z-10">
+      <StateThemeChecker /> {/* Added component */}
       <div className="container mx-auto">
         <div className="flex items-center justify-between">
           <div className="flex items-center">

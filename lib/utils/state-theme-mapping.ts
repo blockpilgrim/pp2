@@ -6,8 +6,8 @@ import { Theme } from '@/components/ui/theme/theme-provider';
  */
 export const STATE_THEME_MAP: Record<string, Theme> = {
   // Primary states with custom themes
-  'tennessee': 'light-green',
-  'arkansas': 'light-orange',
+  'arkansas': 'light-green', // Arkansas users get light-green theme
+  'tennessee': 'light-orange', // Tennessee users get light-orange theme,
   
   // Future state expansions can be added here
   // 'alabama': 'light-blue',
