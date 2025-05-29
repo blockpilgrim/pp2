@@ -92,8 +92,8 @@ This checklist represents features organized by POC module, with each module foc
 - [x] Create responsive layout components (navigation, sidebar, etc.) using shadcn/ui primitives
 - [x] Build reusable form components with React Hook Form, Zod validation, and shadcn/ui form elements
 - [x] Add data display components (tables, cards, etc.) with shadcn/ui styling conventions
-- [x] Demonstrate theme switching capability using Tailwind and shadcn/ui theming system
-- [x] Implement state-specific theming system with automatic suggestions based on D365 state assignments
+- [x] ~~Demonstrate theme switching capability using Tailwind and shadcn/ui theming system~~ (Removed: Manual theme switching scoped out; D365 state-driven theming is now exclusive)
+- [x] Implement exclusive state-specific theming system, automatically driven by D365 state assignments.
 - [x] Document Tailwind/shadcn component usage patterns and best practices
 - [x] Create comprehensive demo at `/poc/ui` showcasing all components with interactive examples
 

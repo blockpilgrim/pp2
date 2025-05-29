@@ -285,6 +285,26 @@ Implications:
 - Cookie-based theme persistence prevents flash on page loads
 ```
 
+```
+Decision: Simplification of Theme Management to D365 State Exclusivity
+Problem: The application included manual theme toggling capabilities and a demo page which were complex, had minor UI issues, and were not aligned with the core requirement of D365 state-driven theming.
+Options:
+- Debug and fix the ThemeToggle component and maintain manual switching.
+- Remove all manual theme toggling, the demo page, and simplify to D365 state-driven theming only.
+Decision: Removed all manual theme toggling capabilities, the `/poc/ui/theme-switcher` demo page, and associated UI elements. The application's visual theme is now exclusively determined by the user's D365 state via `StateThemeChecker`.
+Rationale:
+- Alignment with Core User Story: Primary requirement is D365-driven theming.
+- Simplified User Experience: Consistent theme based on D365 context.
+- Reduced Code Complexity: Eliminates components/pages for manual toggling.
+- Focus on D365 as Source of Truth: Reinforces guiding principles.
+- Issue Resolution: Sidesteps minor UI issues with `ThemeToggle` by removing the non-essential feature.
+Implications:
+- `StateThemeChecker` is the sole driver for programmatic theme changes.
+- `ThemeProvider` manages theme state, but `StateThemeChecker` dictates the theme.
+- D365 state theme always overrides `localStorage`.
+- Codebase related to theme management is significantly simplified.
+```
+
 ## Adding New Decisions
 
 To add a new decision to this log, follow this template:
