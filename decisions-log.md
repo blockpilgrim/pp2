@@ -348,6 +348,43 @@ Implications:
 - Pattern can be applied to other pages needing fresh D365 data
 ```
 
+```
+
+Decision: State Management, Data Fetching, and Validation Patterns for POC
+Problem: To establish clear, scalable, and maintainable patterns for client-side state management, server data interaction, and data validation for the Partner Portal V2.0, as demonstrated in the State Management POC (`/poc/state`).
+Options:
+- Ad-hoc state management within individual components, leading to potential inconsistencies and difficulties in sharing state.
+- Relying solely on React Context API for all global state, which can become complex for managing server cache and frequent updates.
+- Using a single, all-encompassing state management library for both server cache and client UI state, potentially leading to a less specialized or overly complex solution for one or both concerns.
+- Adopting a combination of specialized, best-in-class libraries for distinct concerns: server state, global client UI state, and local component state, along with dedicated validation libraries.
+Decision: Implemented a structured approach using a combination of specialized libraries:
+1.  **TanStack Query for Server State Management:**
+    *   Handles all interactions with server-side data (fetching lists, creating, updating, deleting items).
+    *   Manages caching, background refetching, and request deduplication.
+    *   Employs optimistic updates for all mutations to provide a responsive UI, with rollback on error.
+    *   Utilizes consistent query key naming (e.g., `['pocItems']`) for effective cache management and invalidation.
+2.  **Zod & React Hook Form for Client-Side Validation:**
+    *   Zod schemas define data structures and validation rules for forms (e.g., `itemFormSchema`).
+    *   React Hook Form integrates with Zod (via `@hookform/resolvers/zod`) for form state management, submission, and clear display of validation errors.
+3.  **Zustand for Global Client-Side UI State:**
+    *   Manages UI-specific state not persisted on the server but shared across components (e.g., `itemFilter` for list display).
+    *   Stores are kept lean and focused on specific domains of state (e.g., `useItemFilterStore`).
+4.  **React `useState` for Local Component State:**
+    *   Used for state confined to a single component (e.g., `editingItem` in the item list).
+Rationale:
+-   **Clear Separation of Concerns:** Distinct tools for server state, global client state, local state, and validation lead to a more organized and understandable codebase.
+-   **Specialized Tooling:** Each library is highly optimized for its specific purpose (e.g., TanStack Query for server caching, Zustand for lightweight global state).
+-   **Improved Developer Experience:** Clear patterns make it easier for developers to understand where and how to manage different types of state.
+-   **Scalability and Maintainability:** Modular approach facilitates easier testing, debugging, and scaling of the application.
+-   **Performance:** Optimistic updates and efficient caching (TanStack Query) and lightweight global state (Zustand) contribute to a responsive user experience.
+Implications:
+-   Developers should adhere to these established patterns when implementing new features requiring state management or data interaction.
+-   New Zustand stores should be created for new domains of global client UI state, keeping them focused.
+-   TanStack Query should be the default for all server-side data operations.
+-   Zod schemas should be defined for all form data and API payloads/responses where applicable.
+-   Requires understanding of these specific libraries, but the benefits in structure and maintainability outweigh the initial learning curve.
+```
+
 ## Adding New Decisions
 
 To add a new decision to this log, follow this template:
