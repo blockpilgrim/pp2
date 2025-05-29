@@ -7,6 +7,7 @@ export interface AppContactProfile {
   lastName?: string;
   email?: string;
   roles: UserRole[]; // Application-specific roles from D365
+  states?: string[]; // State assignments from D365 (e.g., ["arkansas", "tennessee"])
   // Add other relevant profile fields from D365 as needed
   // e.g., companyName?: string; phoneNumber?: string; jobTitle?: string;
 }
@@ -55,12 +56,14 @@ export class D365ContactService {
 
       if (contacts && contacts.length > 0) {
         const d365Contact = contacts[0];
+        const rolesAndStates = this.parseRolesAndStates(d365Contact[this.APP_ROLES_FIELD]);
         const appProfile: AppContactProfile = {
           contactId: d365Contact.contactid!, 
           firstName: d365Contact[this.D365_FIRSTNAME_FIELD],
           lastName: d365Contact[this.D365_LASTNAME_FIELD],
           email: d365Contact[this.D365_EMAIL_FIELD], 
-          roles: this.mapD365RolesToAppRoles(d365Contact[this.APP_ROLES_FIELD]),
+          roles: rolesAndStates.roles,
+          states: rolesAndStates.states,
           // jobTitle: d365Contact[this.D365_JOBTITLE_FIELD], // Example
         };
         console.log(`D365ContactService: Found contact profile for AAD OID ${azureAdObjectId}:`, appProfile);
@@ -76,6 +79,62 @@ export class D365ContactService {
   }
 
   /**
+   * Parses the combined roles and states field from D365.
+   * Supports prefix notation: "role:admin,role:partner,state:arkansas"
+   * Also supports legacy format for backward compatibility: "admin,partner"
+   * 
+   * @param d365RolesField The raw data from the D365 Contact's APP_ROLES_FIELD
+   * @returns An object containing separated roles and states arrays
+   */
+  private static parseRolesAndStates(d365RolesField: any): { roles: UserRole[], states: string[] } {
+    const result = { roles: [] as UserRole[], states: [] as string[] };
+    
+    if (!d365RolesField) {
+      console.log(`D365ContactService: Roles field ('${this.APP_ROLES_FIELD}') is empty or null.`);
+    } else if (typeof d365RolesField === 'string' && d365RolesField.trim().length > 0) {
+      const values = d365RolesField.split(',').map(val => val.trim());
+      
+      for (const value of values) {
+        // Handle prefixed values
+        if (value.startsWith('role:')) {
+          const role = value.substring(5).toLowerCase();
+          if (Object.values(UserRole).includes(role as UserRole)) {
+            result.roles.push(role as UserRole);
+          } else {
+            console.warn(`D365ContactService: Unknown role '${role}' in prefixed value '${value}'`);
+          }
+        } else if (value.startsWith('state:')) {
+          const state = value.substring(6).toLowerCase();
+          result.states.push(state);
+          console.log(`D365ContactService: Found state assignment: ${state}`);
+        }
+        // Legacy support: unprefixed values are assumed to be roles
+        else {
+          const lowercaseValue = value.toLowerCase();
+          if (Object.values(UserRole).includes(lowercaseValue as UserRole)) {
+            result.roles.push(lowercaseValue as UserRole);
+            console.log(`D365ContactService: Legacy role format detected: ${lowercaseValue}`);
+          } else {
+            console.warn(`D365ContactService: Unknown unprefixed value '${value}' - not a recognized role`);
+          }
+        }
+      }
+    } else {
+      console.warn(`D365ContactService: Roles field ('${this.APP_ROLES_FIELD}') has unexpected type: ${typeof d365RolesField}`);
+    }
+    
+    // Ensure default role if no roles found
+    if (result.roles.length === 0) {
+      result.roles.push(UserRole.USER);
+      console.log(`D365ContactService: No specific roles found, assigning default role: ${UserRole.USER}`);
+    }
+    
+    console.log(`D365ContactService: Parsed roles: ${result.roles.join(',')}, states: ${result.states.join(',') || 'none'}`);
+    return result;
+  }
+
+  /**
+   * DEPRECATED: Use parseRolesAndStates instead
    * Maps the role data retrieved from D365 to the application's UserRole enum.
    * 
    * @param d365RolesField The raw role data from the D365 Contact record's APP_ROLES_FIELD.

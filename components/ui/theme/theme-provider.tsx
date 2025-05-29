@@ -2,12 +2,13 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
 
-type Theme = "dark" | "light" | "system";
+export type Theme = "light-orange" | "light-green";
 
 type ThemeProviderProps = {
   children: React.ReactNode;
   defaultTheme?: Theme;
   storageKey?: string;
+  initialTheme?: Theme; // Theme from server-side cookie
 };
 
 type ThemeProviderState = {
@@ -16,7 +17,7 @@ type ThemeProviderState = {
 };
 
 const initialState: ThemeProviderState = {
-  theme: "system",
+  theme: "light-green", // Aligned with primary brand default
   setTheme: () => null,
 };
 
@@ -24,46 +25,53 @@ const ThemeProviderContext = createContext<ThemeProviderState>(initialState);
 
 export function ThemeProvider({
   children,
-  defaultTheme = "system",
+  defaultTheme = "light-green", // Aligned with primary brand default
   storageKey = "partner-portal-theme",
+  initialTheme,
   ...props
 }: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>(defaultTheme);
-
-  useEffect(() => {
-    const savedTheme = localStorage.getItem(storageKey) as Theme | null;
-    
-    if (savedTheme) {
-      setTheme(savedTheme);
-    } else if (defaultTheme === "system") {
-      const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches
-        ? "dark"
-        : "light";
-      setTheme(systemTheme);
+  const [theme, setTheme] = useState<Theme>(() => {
+    // If we have an initial theme from the server, use it
+    if (initialTheme) {
+      return initialTheme;
     }
-  }, [defaultTheme, storageKey]);
+    
+    // Otherwise, check localStorage (client-side only)
+    if (typeof window !== 'undefined') {
+      const savedTheme = localStorage.getItem(storageKey) as Theme | null;
+      if (savedTheme) {
+        return savedTheme;
+      }
+    }
+    return defaultTheme;
+  });
 
   useEffect(() => {
     const root = window.document.documentElement;
 
-    root.classList.remove("light", "dark");
+    root.classList.remove("theme-light-green"); // Remove any existing theme class
 
-    if (theme === "system") {
-      const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches
-        ? "dark"
-        : "light";
-      root.classList.add(systemTheme);
-      return;
+    if (theme === "light-green") {
+      root.classList.add("theme-light-green");
     }
+    // For "light-orange", no class is needed as it's the default via :root in globals.css
 
-    root.classList.add(theme);
   }, [theme]);
 
   const value = {
     theme,
-    setTheme: (theme: Theme) => {
-      localStorage.setItem(storageKey, theme);
-      setTheme(theme);
+    setTheme: (newTheme: Theme) => {
+      // Update localStorage for client-side persistence
+      // This provides faster access on subsequent client navigations
+      localStorage.setItem(storageKey, newTheme);
+      
+      // Update cookie for server-side rendering
+      // This prevents theme flash on page refresh/initial load
+      // Note: httpOnly is false to allow client-side theme switching
+      document.cookie = `partner-portal-theme=${newTheme}; path=/; max-age=${60 * 60 * 24 * 365}; SameSite=Lax`;
+      
+      // Update React state to trigger re-render
+      setTheme(newTheme);
     },
   };
 

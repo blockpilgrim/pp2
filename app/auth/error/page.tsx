@@ -51,15 +51,17 @@ export default function AuthErrorPage() {
           {errorMessage}
         </p>
         <div className="space-y-3">
-          <Link href="/login" legacyBehavior>
-            <a className="block w-full px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
-              Try Signing In Again
-            </a>
+          <Link 
+            href="/login" 
+            className="block w-full px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+          >
+            Try Signing In Again
           </Link>
-          <Link href="/" legacyBehavior>
-            <a className="block w-full px-4 py-2 bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-200 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
-              Go to Homepage
-            </a>
+          <Link 
+            href="/" 
+            className="block w-full px-4 py-2 bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-200 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+          >
+            Go to Homepage
           </Link>
         </div>
         {errorType && (

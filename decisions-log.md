@@ -223,6 +223,68 @@ Implications:
 - The layout file for POCs with sub-navigation (e.g., `app/poc/ui/layout.tsx`) becomes responsible for rendering the relevant sub-navigation component.
 ```
 
+```
+Decision: Global Navigation Implementation
+Problem: POC navigation component was only displayed on POC-specific pages, leading to inconsistent navigation experience across the application
+Options:
+- Keep navigation POC-specific and create a separate global navigation
+- Duplicate navigation component in each layout that needs it
+- Move POC navigation to root layout to serve as global navigation
+Decision: Moved PocNavigation component to root layout, making it the global navigation
+Rationale:
+- Simplicity: Single navigation component serves entire application
+- Consistency: Users see the same navigation on all pages
+- Maintainability: One component to update when navigation changes
+- Clarity: Clear navigation available throughout the application
+Implications:
+- Navigation now appears on all pages including home and auth error pages
+- Removed redundant login button from home page
+- Future navigation updates only need to be made in one place
+- Sets pattern for global UI elements
+```
+
+```
+Decision: Theme-Specific Logo Switching Architecture
+Problem: Need to support different logos based on theme/role but maintain clean code structure
+Options:
+- Remove logo switching logic entirely until needed
+- Keep conditional logic in place for future implementation
+- Implement complex role-based switching immediately
+Decision: Maintain conditional logo switching structure with placeholders for future implementation
+Rationale:
+- Scalability: Architecture ready for multi-state/role-based branding
+- Forward-thinking: Prevents refactoring when actual logos are available
+- Clean implementation: Logic is in place but uses same logo for now
+- Aligns with multi-state expansion plans mentioned in project purpose
+Implications:
+- Code includes conditional logic that currently shows same logo
+- When different logos are available (e.g., /tn.svg), only image paths need updating
+- Establishes pattern for theme/role-based UI variations
+```
+
+```
+Decision: State-Specific Theming Implementation Approach
+Problem: Need to assign state-specific themes based on user's Dynamics 365 Contact record data without modifying D365 schema
+Options:
+- Option 1: Create separate D365 fields for states and roles
+- Option 2: Use prefix notation in existing role field (e.g., "role:admin,state:arkansas")
+- Option 3: Allow mixed values with smart parsing
+- Option 4: Store JSON structure in the field
+Decision: Implemented prefix-based notation approach (Option 2)
+Rationale:
+- Simplicity: Easy to understand and configure in D365 without schema changes
+- Flexibility: Allows both roles and states in a single field
+- Backward Compatibility: Maintains support for unprefixed role values
+- Clarity: Clear visual distinction between roles and states
+- Scalability: Easy to add new prefixes in the future if needed
+Implications:
+- D365 administrators must use prefix notation when configuring user access
+- Parsing logic required in D365ContactService to separate roles from states
+- Documentation needed for D365 field configuration format
+- Theme suggestions offered automatically based on state assignments
+- Cookie-based theme persistence prevents flash on page loads
+```
+
 ## Adding New Decisions
 
 To add a new decision to this log, follow this template:

@@ -23,16 +23,23 @@ const partnerRequiredPaths = [
 // Define a matcher for routes that should be handled by this middleware
 export const config = {
   matcher: [
-    // Add routes that should be protected
-    "/poc/auth/protected",
-    "/poc/auth/admin",
-    "/poc/auth/partner",
-    // Add other protected routes as needed
+    /*
+     * Match all request paths except for the ones starting with:
+     * - api/auth (auth endpoints)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - public folder
+     */
+    '/((?!api/auth|_next/static|_next/image|favicon.ico|.*\\..*|images).*)',
   ],
 };
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  
+  // Create response object early to handle cookies
+  let response = NextResponse.next();
   
   // Get user session from Auth.js
   const session = await auth();
@@ -63,5 +70,5 @@ export async function middleware(request: NextRequest) {
     }
   }
   
-  return NextResponse.next();
+  return response;
 }

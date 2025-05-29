@@ -103,6 +103,62 @@ Production approach: Implement a robust token refresh mechanism within the JWT c
 Priority: High (if access token is actively used), Low (if not used)
 ```
 
+```
+Item: Theme-specific logo implementation incomplete
+Description: Logo switching logic exists in PocNavigation but all themes currently use the same logo (/ar.svg)
+Why it's debt: The conditional logic adds complexity without current benefit, and actual theme-specific logos are not implemented
+Production approach: Add appropriate logo files for each theme (/tn.svg for Tennessee/green theme) and update the image paths in the switching logic
+Priority: Low
+```
+
+```
+Item: Hardcoded session refetch interval
+Description: Session refetch interval is hardcoded to 5 minutes in providers.tsx
+Why it's debt: Not configurable for different environments or security requirements
+Production approach: Move refetch interval to environment variables for configurability
+Priority: Low
+```
+
+```
+Item: Client component pattern cleanup
+Description: Fixed anti-pattern where 'use client' directives were declared inside server components, but similar patterns may exist elsewhere
+Why it's debt: Can cause hydration mismatches and violates Next.js 13+ best practices
+Production approach: Audit all components for proper client/server separation
+Priority: Medium
+```
+
+```
+Item: State theme mapping hardcoded in utility file
+Description: State-to-theme mappings are hardcoded in lib/utils/state-theme-mapping.ts
+Why it's debt: Not configurable for different deployments or new states without code changes
+Production approach: Move state-theme mappings to configuration or database, allowing dynamic updates
+Priority: Low
+```
+
+```
+Item: Theme API endpoint lacks proper validation
+Description: The /api/theme endpoint accepts any theme value without validation against allowed themes
+Why it's debt: Could allow invalid theme values to be set in cookies, potentially breaking the UI
+Production approach: Add Zod validation to ensure only valid theme values are accepted
+Priority: Medium
+```
+
+```
+Item: Session storage for theme suggestion decline not persistent
+Description: StateThemeChecker uses sessionStorage to track if user declined theme suggestion, which resets on new sessions
+Why it's debt: Users may be repeatedly prompted to switch themes on each new session
+Production approach: Store user theme preferences in database or use longer-lived storage mechanism
+Priority: Low
+```
+
+```
+Item: State assignment prefix parsing lacks comprehensive validation
+Description: D365ContactService parses prefix notation but doesn't validate state values against known states
+Why it's debt: Invalid state values could be stored in user session without validation
+Production approach: Validate parsed states against a configuration of allowed states
+Priority: Low
+```
+
 ## Adding New Technical Debt Items
 
 To add a new technical debt item to this log, follow this template:

@@ -70,6 +70,8 @@ This checklist represents features organized by POC module, with each module foc
 - [x] **D365 Field Name Usage:** `D365ContactService` uses environment variables for field names.
 - [x] **UI Updated:** `poc-navigation.tsx` displays D365 user status and session errors.
 - [x] **Adapt `mapD365RolesToAppRoles` (Completed):** Logic in `D365ContactService` confirmed to handle comma-separated string format for roles; other examples retained as comments.
+- [x] **State Assignment Support:** Extended D365ContactService to parse state assignments using prefix notation (e.g., "state:arkansas")
+- [x] **State Theme Integration:** Implemented automatic theme suggestions based on user's D365 state assignments
 - [ ] **Thorough Testing (End-to-End) (Current Focus):**
     - [ ] User exists in Azure AD and D365 (with roles correctly mapped).
     - [ ] User exists in Azure AD but not in D365 (or not linked).
@@ -91,6 +93,7 @@ This checklist represents features organized by POC module, with each module foc
 - [x] Build reusable form components with React Hook Form, Zod validation, and shadcn/ui form elements
 - [x] Add data display components (tables, cards, etc.) with shadcn/ui styling conventions
 - [x] Demonstrate theme switching capability using Tailwind and shadcn/ui theming system
+- [x] Implement state-specific theming system with automatic suggestions based on D365 state assignments
 - [x] Document Tailwind/shadcn component usage patterns and best practices
 - [x] Create comprehensive demo at `/poc/ui` showcasing all components with interactive examples
 
@@ -313,7 +316,11 @@ These files are separated from the main handoff summary to optimize context wind
 
 ## Current Focus Area
 
-**Finalizing and Testing Dynamics 365 Integration for Authentication & Authorization POC.**
+**Testing Dynamics 365 Integration for Authentication & Authorization POC**
+
+With state-specific theming now complete, the focus returns to finalizing the Authentication & Authorization POC by conducting thorough end-to-end testing of the D365 integration. This includes verifying the state assignment parsing and theme suggestions work correctly with real D365 data.
+
+<!-- **Previous Implementation Details:**
 
 The current effort involves completing the integration of Dynamics 365 (D365) as the source of truth for user profile information and application-specific roles. Azure Active Directory (Azure AD) remains the primary authentication provider.
 
@@ -349,7 +356,7 @@ The current effort involves completing the integration of Dynamics 365 (D365) as
 4.  **Refine Error Handling (Post-Testing):**
     *   Implement more user-friendly display of session errors related to D365 integration (e.g., using toast notifications for `D365LookupFailed` or similar errors surfaced in `session.error`).
 
-*Last updated: 2025-05-11* 
+*Last updated: 2025-05-29*  -->
 
 ---
 

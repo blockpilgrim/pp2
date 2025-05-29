@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { SessionProvider } from "next-auth/react";
-import { ThemeProvider } from "@/components/ui/theme/theme-provider";
+import { PocNavigation } from "@/components/custom/poc-navigation";
+import { Providers } from "./providers";
+import { getThemeFromCookies } from "@/lib/utils/theme-cookies";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -19,40 +20,29 @@ export const metadata: Metadata = {
   description: "Lead Management Portal",
 };
 
-function AuthProvider({ children }: { children: React.ReactNode }) {
-  'use client'
-  return (
-    <SessionProvider refetchInterval={5 * 60} refetchOnWindowFocus={true}>
-      {children}
-    </SessionProvider>
-  )
-}
-
-function ThemeProviderWrapper({ children }: { children: React.ReactNode }) {
-  'use client'
-  return (
-    <ThemeProvider>
-      {children}
-    </ThemeProvider>
-  )
-}
-
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Get theme from cookies on the server
+  const theme = await getThemeFromCookies();
+  
+  // Apply theme class to html element based on cookie
+  const themeClass = theme === 'light-green' ? 'theme-light-green' : '';
+  
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className={themeClass} suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning
       >
-        <ThemeProviderWrapper>
-          <AuthProvider>
+        <Providers initialTheme={theme}>
+          <PocNavigation />
+          <main className="flex-grow">
             {children}
-          </AuthProvider>
-        </ThemeProviderWrapper>
+          </main>
+        </Providers>
       </body>
     </html>
   );
