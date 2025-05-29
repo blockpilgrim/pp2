@@ -35,6 +35,8 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --color-nav: var(--nav-background);
+  --color-nav-foreground: var(--nav-foreground);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -81,12 +83,9 @@
 .theme-light-green {
   --primary: #00B274; /* Green #00B274 */
   /* --primary-foreground remains oklch(0.984 0.003 247.858) inherited from :root */
+  /* Nav colors remain the same as :root for consistency */
 }
 
-[data-custom-nav-bg] {
-  background-color: var(--nav-background);
-  color: var(--nav-foreground);
-}
 
 @layer base {
   * {

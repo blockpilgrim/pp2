@@ -66,6 +66,10 @@ module.exports = {
           3: "var(--chart-3)",
           4: "var(--chart-4)",
           5: "var(--chart-5)",
+        },
+        nav: {
+          DEFAULT: "var(--nav-background)",
+          foreground: "var(--nav-foreground)",
         }
       },
       borderRadius: {

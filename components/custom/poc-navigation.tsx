@@ -23,7 +23,7 @@ export function PocNavigation() {
   ];
 
   return (
-    <div data-custom-nav-bg className="py-2 mb-6 border-b border-gray-700 sticky top-0 z-10">
+    <div className="bg-nav text-nav-foreground py-2 mb-6 border-b border-gray-700 sticky top-0 z-10">
       <div className="container mx-auto">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
@@ -34,16 +34,16 @@ export function PocNavigation() {
             >
               {theme === 'light-orange' ? (
                 <Image 
-                  src="/ectn-logo.png" 
-                  alt="Energy Company TN Logo" 
-                  width={137} 
+                  src="/ar.svg" 
+                  alt="Orange Theme Logo" 
+                  width={125} 
                   height={30} 
                   priority 
                 />
               ) : theme === 'light-green' ? (
                 <Image 
                   src="/ar.svg" 
-                  alt="Affiliated Reseller Logo" 
+                  alt="Green Theme Logo" 
                   width={125} 
                   height={30} 
                   priority 
@@ -51,8 +51,8 @@ export function PocNavigation() {
               ) : (
                 // Fallback to default logo (Light Orange theme logo) if theme is not yet determined or on initial render
                 <Image 
-                  src="/ectn-logo.png" 
-                  alt="Energy Company TN Logo" 
+                  src="/ar.svg" 
+                  alt="Default Theme Logo" 
                   width={137} height={30} priority />
               )}
             </Link>
@@ -65,7 +65,7 @@ export function PocNavigation() {
                     "px-3 py-1 rounded-md text-sm transition-colors",
                     pathname.startsWith(item.href)
                       ? "bg-primary text-primary-foreground"
-                      : "hover:bg-white/10" // text-nav-foreground removed, should inherit
+                      : "hover:bg-nav-foreground/10"
                   )}
                 >
                   {item.name}
@@ -101,13 +101,13 @@ export function PocNavigation() {
                      </span>
                   )}
                 </span>
-                <Button variant="outline" size="sm" onClick={() => signOut({ callbackUrl: '/' })} className="text-white border-white hover:bg-white hover:text-[var(--nav-background)]">
+                <Button variant="outline" size="sm" onClick={() => signOut({ callbackUrl: '/' })} className="text-nav-foreground border-nav-foreground hover:bg-nav-foreground hover:text-nav">
                   Sign Out
                 </Button>
               </>
             )}
             {status === "unauthenticated" && (
-               <Button variant="outline" size="sm" asChild className="text-white border-white hover:bg-white hover:text-[var(--nav-background)]">
+               <Button variant="outline" size="sm" asChild className="text-nav-foreground border-nav-foreground hover:bg-nav-foreground hover:text-nav">
                  <Link href="/login">Sign In</Link>
                </Button>
             )}
