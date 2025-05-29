@@ -176,9 +176,6 @@ Based on the implemented features and security-first principles, the following u
 - Follow the project's [Vitest Guidelines](./vitest-guidelines.md)
 
 **Testing Goal**: Establish and maintain a comprehensive testing strategy that ensures code quality, stability, and maintainability, aligning with our core principles (Security, Stability, Scalability, Maintainability, Knowledge Sharing, Clarity, Simplicity, Modern Best Practices). This includes robust unit tests for business logic and utilities, component tests for UI interactions, and a plan for future integration and end-to-end testing. All tests should be clear, easy to understand, and contribute to a reliable and secure application. Refer to the [Vitest Testing Framework: Guidelines and Best Practices](./vitest-guidelines.md) for detailed guidance.
-=======
-**Testing Goal**: Establish consistent testing patterns that can be applied across all POC modules, incorporating baseline security verification checks into the QA process.
->>>>>>> 1e8588d (Revert "```")
 
 ### Deployment & Documentation
 - [ ] Set up deployment pipeline example

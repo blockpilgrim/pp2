@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSession } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -52,6 +52,7 @@ export function ProfileForm({ initialData, onUpdateSuccess }: ProfileFormProps) 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [infoMessage, setInfoMessage] = useState<string | null>(null);
   const { data: session, update } = useSession();
   const router = useRouter();
 
@@ -81,6 +82,7 @@ export function ProfileForm({ initialData, onUpdateSuccess }: ProfileFormProps) 
     setIsSubmitting(true);
     setError(null);
     setSuccess(false);
+    setInfoMessage(null);
 
     try {
       const response = await fetch("/api/profile", {
@@ -103,9 +105,18 @@ export function ProfileForm({ initialData, onUpdateSuccess }: ProfileFormProps) 
       setSuccess(true);
       setIsEditing(false);
       
+      // Check if roles or states were changed
+      const rolesOrStatesChanged = data.portalRolesRaw !== initialData.portalRolesRaw;
+      
       // Call the success callback to refresh data
       if (onUpdateSuccess) {
         onUpdateSuccess();
+      }
+      
+      // Show special message if roles/states were changed
+      if (rolesOrStatesChanged) {
+        setSuccess(false); // Clear generic success message
+        setInfoMessage("Role/state changes saved. Please sign out and back in to apply theme and permission changes.");
       }
       
     } catch (err) {
@@ -120,6 +131,7 @@ export function ProfileForm({ initialData, onUpdateSuccess }: ProfileFormProps) 
     setIsEditing(false);
     setError(null);
     setSuccess(false);
+    setInfoMessage(null);
   };
 
   if (!initialData.isD365User) {
@@ -167,6 +179,21 @@ export function ProfileForm({ initialData, onUpdateSuccess }: ProfileFormProps) 
         {success && (
           <Alert className="mb-4">
             <AlertDescription>Profile updated successfully!</AlertDescription>
+          </Alert>
+        )}
+        
+        {infoMessage && (
+          <Alert className="mb-4">
+            <AlertDescription className="flex items-center justify-between">
+              <span>{infoMessage}</span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => signOut({ callbackUrl: '/' })}
+              >
+                Sign Out
+              </Button>
+            </AlertDescription>
           </Alert>
         )}
 
@@ -247,7 +274,7 @@ export function ProfileForm({ initialData, onUpdateSuccess }: ProfileFormProps) 
                   </FormControl>
                   <FormDescription>
                     Format: role:name,state:name. Roles: user, partner, admin. 
-                    Changes are logged and may require approval.
+                    Note: Changing roles or states requires signing out and back in.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
