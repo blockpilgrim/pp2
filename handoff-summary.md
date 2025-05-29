@@ -47,7 +47,7 @@ This checklist represents features organized by POC module, with each module foc
 - [x] Create centralized error handling utilities (`lib/utils/error-handler.ts`, `DataverseError` in `d365Client.ts`)
 - [x] Add comprehensive API error responses (demonstrated in `d365Client.ts`)
 - [ ] **Security Baseline**: Implement robust server-side input validation (using Zod or similar) for all API route inputs to prevent common vulnerabilities (XSS, injection, etc.).
-- [x] Build working demo at `/poc/core` demonstrating data integration
+- [x] ~~Build working demo at `/poc/core` demonstrating data integration~~ (Removed: Dataverse client integration is demonstrated via Authentication & Authorization POC and Profile features)
 - [ ] **Security Baseline**: Conduct Dataverse Least Privilege Audit:
     - [ ] Document permissions assigned to the application's service principal in D365.
     - [ ] Confirm permissions adhere to the principle of least privilege for all Dataverse operations.

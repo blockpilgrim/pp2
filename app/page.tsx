@@ -42,11 +42,6 @@ export default function Home() {
           <h2 className="text-xl font-semibold mb-4">POC Modules:</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Link href="/poc/core" className="block p-6 bg-card border border-border rounded-lg shadow-sm hover:bg-accent transition-colors">
-              <h3 className="text-lg font-medium text-card-foreground">Core Infrastructure POC</h3>
-              <p className="text-muted-foreground">Dataverse integration, error handling, configuration</p>
-            </Link>
-            
             <Link href="/poc/auth" className="block p-6 bg-card border border-border rounded-lg shadow-sm hover:bg-accent transition-colors">
               <h3 className="text-lg font-medium text-card-foreground">Authentication POC</h3>
               <p className="text-muted-foreground">Authentication and Authorization</p>

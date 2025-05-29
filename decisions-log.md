@@ -15,6 +15,27 @@ When making new architectural or implementation decisions:
 ## Decisions
 
 ```
+Decision: Removal of Core Infrastructure POC Page and API Route
+Problem: The `/poc/core` page and its associated API route (`/api/dataverse/test`) were created to demonstrate basic Dataverse client connectivity. This functionality became redundant as more comprehensive Dataverse interactions were implemented within the Authentication/Authorization POC (user profile fetching) and planned for the Profile page.
+Options:
+- Keep the `/poc/core` page as a standalone, simple test utility.
+- Refactor `/poc/core` to demonstrate more advanced Dataverse features.
+- Remove `/poc/core` and its API route to simplify the project and eliminate redundancy.
+Decision: Remove the `/poc/core` page and the `/api/dataverse/test` API route.
+Rationale:
+- Simplicity: Aligns with the guiding principle of favoring straightforward solutions and reducing complexity.
+- Redundancy: The core purpose (testing Dataverse connection) is covered by other, more functional parts of the application (e.g., user login, profile page).
+- Maintainability: Reduces the amount of code to maintain and test.
+- Clarity: Streamlines the POCs to focus on distinct, non-overlapping concerns.
+Implications:
+- The `handoff-summary.md` was updated to reflect this change.
+- Navigation links to `/poc/core` were removed from `poc-navigation.tsx` and `app/page.tsx`.
+- The `app/poc/core` directory and `app/api/dataverse/test` directory were deleted.
+- Future demonstrations of Dataverse client capabilities will rely on the Authentication POC, Profile page, and other feature-specific implementations.
+```
+
+
+```
 Decision: Development Approach - Modular POCs vs Comprehensive Prototype
 Problem: Need to determine whether to build separate POCs or a single comprehensive prototype
 Options:

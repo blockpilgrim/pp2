@@ -17,7 +17,6 @@ export function PocNavigation() {
   const { theme } = useTheme(); // Get current theme
   
   const navItems = [
-    { name: "Core POC", href: "/poc/core" },
     { name: "Auth POC", href: "/poc/auth" },
     { name: "UI POC", href: "/poc/ui" },
     { name: "BFF POC", href: "/poc/bff" },
