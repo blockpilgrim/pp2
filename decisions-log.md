@@ -223,6 +223,45 @@ Implications:
 - The layout file for POCs with sub-navigation (e.g., `app/poc/ui/layout.tsx`) becomes responsible for rendering the relevant sub-navigation component.
 ```
 
+```
+Decision: Global Navigation Implementation
+Problem: POC navigation component was only displayed on POC-specific pages, leading to inconsistent navigation experience across the application
+Options:
+- Keep navigation POC-specific and create a separate global navigation
+- Duplicate navigation component in each layout that needs it
+- Move POC navigation to root layout to serve as global navigation
+Decision: Moved PocNavigation component to root layout, making it the global navigation
+Rationale:
+- Simplicity: Single navigation component serves entire application
+- Consistency: Users see the same navigation on all pages
+- Maintainability: One component to update when navigation changes
+- Clarity: Clear navigation available throughout the application
+Implications:
+- Navigation now appears on all pages including home and auth error pages
+- Removed redundant login button from home page
+- Future navigation updates only need to be made in one place
+- Sets pattern for global UI elements
+```
+
+```
+Decision: Theme-Specific Logo Switching Architecture
+Problem: Need to support different logos based on theme/role but maintain clean code structure
+Options:
+- Remove logo switching logic entirely until needed
+- Keep conditional logic in place for future implementation
+- Implement complex role-based switching immediately
+Decision: Maintain conditional logo switching structure with placeholders for future implementation
+Rationale:
+- Scalability: Architecture ready for multi-state/role-based branding
+- Forward-thinking: Prevents refactoring when actual logos are available
+- Clean implementation: Logic is in place but uses same logo for now
+- Aligns with multi-state expansion plans mentioned in project purpose
+Implications:
+- Code includes conditional logic that currently shows same logo
+- When different logos are available (e.g., /tn.svg), only image paths need updating
+- Establishes pattern for theme/role-based UI variations
+```
+
 ## Adding New Decisions
 
 To add a new decision to this log, follow this template:

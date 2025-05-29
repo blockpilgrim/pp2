@@ -66,10 +66,12 @@ export default function UiShowcasePage() {
             
             if (item.type === 'link' && item.href) {
               return (
-                <Link key={item.id} href={item.href} passHref legacyBehavior>
-                  <a className={`${commonClasses} ${activeClasses}`}>
-                    {item.label}
-                  </a>
+                <Link 
+                  key={item.id} 
+                  href={item.href} 
+                  className={`${commonClasses} ${activeClasses}`}
+                >
+                  {item.label}
                 </Link>
               );
             }

@@ -35,7 +35,7 @@ export function PocNavigation() {
               {theme === 'light-orange' ? (
                 <Image 
                   src="/ar.svg" 
-                  alt="Orange Theme Logo" 
+                  alt="Partner Portal Logo" 
                   width={125} 
                   height={30} 
                   priority 
@@ -43,17 +43,20 @@ export function PocNavigation() {
               ) : theme === 'light-green' ? (
                 <Image 
                   src="/ar.svg" 
-                  alt="Green Theme Logo" 
+                  alt="Partner Portal Logo" 
                   width={125} 
                   height={30} 
                   priority 
                 />
               ) : (
-                // Fallback to default logo (Light Orange theme logo) if theme is not yet determined or on initial render
+                // Fallback to default logo if theme is not yet determined or on initial render
                 <Image 
                   src="/ar.svg" 
-                  alt="Default Theme Logo" 
-                  width={137} height={30} priority />
+                  alt="Partner Portal Logo" 
+                  width={125} 
+                  height={30} 
+                  priority 
+                />
               )}
             </Link>
             <nav className="flex space-x-4">

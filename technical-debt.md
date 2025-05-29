@@ -103,6 +103,30 @@ Production approach: Implement a robust token refresh mechanism within the JWT c
 Priority: High (if access token is actively used), Low (if not used)
 ```
 
+```
+Item: Theme-specific logo implementation incomplete
+Description: Logo switching logic exists in PocNavigation but all themes currently use the same logo (/ar.svg)
+Why it's debt: The conditional logic adds complexity without current benefit, and actual theme-specific logos are not implemented
+Production approach: Add appropriate logo files for each theme (/tn.svg for Tennessee/green theme) and update the image paths in the switching logic
+Priority: Low
+```
+
+```
+Item: Hardcoded session refetch interval
+Description: Session refetch interval is hardcoded to 5 minutes in providers.tsx
+Why it's debt: Not configurable for different environments or security requirements
+Production approach: Move refetch interval to environment variables for configurability
+Priority: Low
+```
+
+```
+Item: Client component pattern cleanup
+Description: Fixed anti-pattern where 'use client' directives were declared inside server components, but similar patterns may exist elsewhere
+Why it's debt: Can cause hydration mismatches and violates Next.js 13+ best practices
+Production approach: Audit all components for proper client/server separation
+Priority: Medium
+```
+
 ## Adding New Technical Debt Items
 
 To add a new technical debt item to this log, follow this template:
