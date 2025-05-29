@@ -76,6 +76,7 @@ export default function AuthPocPage() {
               <p className="text-sm text-gray-600">Logged in as: <span className="font-medium">{session.user.email}</span></p>
               <p className="text-sm text-gray-600">Name: <span className="font-medium">{session.user.name}</span></p>
               <p className="text-sm text-gray-600">Roles: <span className="font-medium">{session.user.roles?.join(', ') || 'None'}</span></p>
+              <p className="text-sm text-gray-600">State Assignment: <span className="font-medium">{session.user.states?.join(', ') || 'None'}</span></p>
               <p className="text-sm text-gray-600">D365 User: <span className="font-medium">{session.user.isD365User ? 'Yes' : 'No'}</span></p>
               {session.error && (
                 <p className="text-sm text-red-500">Session Error: <span className="font-medium">{session.error}</span></p>
