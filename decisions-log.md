@@ -262,6 +262,29 @@ Implications:
 - Establishes pattern for theme/role-based UI variations
 ```
 
+```
+Decision: State-Specific Theming Implementation Approach
+Problem: Need to assign state-specific themes based on user's Dynamics 365 Contact record data without modifying D365 schema
+Options:
+- Option 1: Create separate D365 fields for states and roles
+- Option 2: Use prefix notation in existing role field (e.g., "role:admin,state:arkansas")
+- Option 3: Allow mixed values with smart parsing
+- Option 4: Store JSON structure in the field
+Decision: Implemented prefix-based notation approach (Option 2)
+Rationale:
+- Simplicity: Easy to understand and configure in D365 without schema changes
+- Flexibility: Allows both roles and states in a single field
+- Backward Compatibility: Maintains support for unprefixed role values
+- Clarity: Clear visual distinction between roles and states
+- Scalability: Easy to add new prefixes in the future if needed
+Implications:
+- D365 administrators must use prefix notation when configuring user access
+- Parsing logic required in D365ContactService to separate roles from states
+- Documentation needed for D365 field configuration format
+- Theme suggestions offered automatically based on state assignments
+- Cookie-based theme persistence prevents flash on page loads
+```
+
 ## Adding New Decisions
 
 To add a new decision to this log, follow this template:

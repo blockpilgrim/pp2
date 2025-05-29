@@ -21,6 +21,7 @@ declare module "next-auth" {
       email?: string | null;
       image?: string | null;
       roles?: UserRole[]; // Roles sourced from D365
+      states?: string[]; // State assignments from D365
       d365Profile?: Partial<AppContactProfile>; // To store parts of the D365 profile
       isD365User?: boolean; // Flag to indicate if a D365 contact was successfully linked
     };
@@ -40,6 +41,7 @@ declare module "next-auth/jwt" {
     id: string; // Azure AD Object ID (maps to user.id or profile.oid)
     contactId?: string; // D365 Contact ID
     roles?: UserRole[]; // Roles sourced from D365
+    states?: string[]; // State assignments from D365
     d365Profile?: Partial<AppContactProfile>;
     isD365User?: boolean;
 
@@ -151,10 +153,12 @@ export const {
           if (contactProfile) {
             token.contactId = contactProfile.contactId;
             token.roles = contactProfile.roles; // Roles from D365 take precedence
+            token.states = contactProfile.states; // State assignments from D365
             token.d365Profile = { // Store relevant D365 profile info
               firstName: contactProfile.firstName,
               lastName: contactProfile.lastName,
               email: contactProfile.email,
+              states: contactProfile.states,
             };
             token.isD365User = true;
 
@@ -214,6 +218,7 @@ export const {
 
       if (token.contactId) session.user.contactId = token.contactId;
       if (token.roles) session.user.roles = token.roles;
+      if (token.states) session.user.states = token.states;
       if (token.d365Profile) {
         session.user.d365Profile = token.d365Profile;
         // Ensure session name/email reflect D365 profile if available

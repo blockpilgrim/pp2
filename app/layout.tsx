@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { PocNavigation } from "@/components/custom/poc-navigation";
 import { Providers } from "./providers";
+import { getThemeFromCookies } from "@/lib/utils/theme-cookies";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -19,18 +20,24 @@ export const metadata: Metadata = {
   description: "Lead Management Portal",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Get theme from cookies on the server
+  const theme = await getThemeFromCookies();
+  
+  // Apply theme class to html element based on cookie
+  const themeClass = theme === 'light-green' ? 'theme-light-green' : '';
+  
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className={themeClass} suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning
       >
-        <Providers>
+        <Providers initialTheme={theme}>
           <PocNavigation />
           <main className="flex-grow">
             {children}

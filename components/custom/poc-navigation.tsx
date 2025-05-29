@@ -8,6 +8,7 @@ import Image from 'next/image'; // Import Next Image
 import { useTheme } from '@/components/ui/theme/theme-provider'; // Import useTheme
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button'; // For Sign In/Out buttons
+import { getStateDisplayName } from '@/lib/utils/state-theme-mapping';
 
 export function PocNavigation() {
   const pathname = usePathname();
@@ -85,25 +86,32 @@ export function PocNavigation() {
 
             {status === "authenticated" && session?.user && (
               <>
-                <span className="text-sm">
-                  Welcome, {session.user.name || 'User'}
-                  {session.user.isD365User === false && ( // Explicitly check for false
-                     <span 
-                       title="Your Dynamics 365 profile could not be linked. Some features might be limited." 
-                       className="ml-1 text-orange-500 cursor-help"
-                     >
-                       (D365?)
-                     </span>
+                <div className="flex flex-col items-end mr-4">
+                  <span className="text-sm">
+                    Welcome, {session.user.name || 'User'}
+                    {session.user.isD365User === false && ( // Explicitly check for false
+                       <span 
+                         title="Your Dynamics 365 profile could not be linked. Some features might be limited." 
+                         className="ml-1 text-orange-500 cursor-help"
+                       >
+                         (D365?)
+                       </span>
+                    )}
+                    {session.error && ( // Display if there's a session-level error
+                       <span 
+                         title={`Session error: ${session.error}`}
+                         className="ml-1 text-red-500 cursor-help"
+                       >
+                         (!)
+                       </span>
+                    )}
+                  </span>
+                  {session.user?.states && session.user.states.length > 0 && (
+                    <span className="text-xs text-nav-foreground/70">
+                      {session.user.states.map(state => getStateDisplayName(state)).join(', ')}
+                    </span>
                   )}
-                  {session.error && ( // Display if there's a session-level error
-                     <span 
-                       title={`Session error: ${session.error}`}
-                       className="ml-1 text-red-500 cursor-help"
-                     >
-                       (!)
-                     </span>
-                  )}
-                </span>
+                </div>
                 <Button variant="outline" size="sm" onClick={() => signOut({ callbackUrl: '/' })} className="text-nav-foreground border-nav-foreground hover:bg-nav-foreground hover:text-nav">
                   Sign Out
                 </Button>
