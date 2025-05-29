@@ -111,15 +111,19 @@ export function PocNavigation() {
                       {session.user.states.map(state => getStateDisplayName(state)).join(', ')}
                     </span>
                   )}
+
                 </div>
                 <Button variant="outline" size="sm" onClick={() => signOut({ callbackUrl: '/' })} className="text-nav-foreground border-nav-foreground hover:bg-nav-foreground hover:text-nav">
                   Sign Out
+
                 </Button>
               </>
             )}
             {status === "unauthenticated" && (
+
                <Button variant="outline" size="sm" asChild className="text-nav-foreground border-nav-foreground hover:bg-nav-foreground hover:text-nav">
                  <Link href="/login">Sign In</Link>
+
                </Button>
             )}
           </div>
