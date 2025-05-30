@@ -7,7 +7,9 @@ import { Theme } from '@/components/ui/theme/theme-provider';
 export const STATE_THEME_MAP: Record<string, Theme> = {
   // Primary states with custom themes
   'arkansas': 'light-green', // Arkansas users get light-green theme
+  'oregon': 'light-green', // Oregon users get light-green theme
   'tennessee': 'light-orange', // Tennessee users get light-orange theme,
+  'kentucky': 'light-purple', // Kentucky users get light-purple theme
   
   // Future state expansions can be added here
   // 'alabama': 'light-blue',
@@ -53,11 +55,13 @@ export function getDefaultThemeFromStates(states?: string[]): Theme | null {
  */
 export function getStateDisplayName(state: string): string {
   const stateNames: Record<string, string> = {
-    'tennessee': 'Tennessee',
-    'arkansas': 'Arkansas',
-    'alabama': 'Alabama',
-    'mississippi': 'Mississippi',
-    'louisiana': 'Louisiana',
+    'tennessee': 'Every Child Tennessee',
+    'arkansas': 'Every Child Arkansas',
+    'oregon': 'Every Child Oregon',
+    'alabama': 'Every Child Alabama',
+    'mississippi': 'Every Child Mississippi',
+    'louisiana': 'Every Child Louisiana',
+    'kentucky': 'Every Child Kentucky',
   };
   
   return stateNames[state.toLowerCase()] || state;

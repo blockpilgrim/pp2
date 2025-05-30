@@ -8,6 +8,7 @@ const authRequiredPaths = [
   "/poc/auth/protected",
   "/poc/auth/admin",
   "/poc/auth/partner",
+  "/profile",
 ];
 
 // List of paths that require admin role

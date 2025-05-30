@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
 
-export type Theme = "light-orange" | "light-green";
+export type Theme = "light-orange" | "light-green" | "light-purple";
 
 type ThemeProviderProps = {
   children: React.ReactNode;
@@ -49,10 +49,12 @@ export function ThemeProvider({
   useEffect(() => {
     const root = window.document.documentElement;
 
-    root.classList.remove("theme-light-green"); // Remove any existing theme class
+    root.classList.remove("theme-light-green", "theme-light-purple"); // Remove all potential theme classes
 
     if (theme === "light-green") {
       root.classList.add("theme-light-green");
+    } else if (theme === "light-purple") {
+      root.classList.add("theme-light-purple");
     }
     // For "light-orange", no class is needed as it's the default via :root in globals.css
 

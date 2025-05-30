@@ -90,6 +90,162 @@
   /* Nav colors remain the same as :root for consistency */
 }
 
+.theme-light-purple {
+  --primary: #AE8BD1; /* Light Purple */
+  --button-primary-bg: var(--primary);
+  --button-primary-bg-hover: oklch(from var(--primary) calc(l - 0.07) c h); /* Darken primary by 7% for hover */
+  /* --primary-foreground can be inherited or specified if different */
+}
+
+
+/* Homepage Animation Styles */
+@keyframes imageIn {
+  0% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 0;
+  }
+  51% {
+    opacity: 1;
+  }
+}
+
+@keyframes coverOut {
+  0% {
+    width: 0%;
+    right: 100%;
+  }
+  50% {
+    width: 100%;
+    right: 0%;
+  }
+  100% {
+    width: 0%;
+    right: 0%;
+  }
+}
+
+@keyframes borderIn {
+  0% {
+    top: 100%;
+    height: 0%;
+    width: 0%;
+    border-top: none;
+    border-right: none;
+  }
+  25% {
+    top: -25px;
+    height: 100%;
+    width: 0%;
+    border-right: 5px solid var(--primary);
+    border-top: 5px solid var(--primary);
+  }
+  50% {
+    top: -25px;
+    height: 100%;
+    width: 100%;
+    border-right: 5px solid var(--primary);
+    border-top: 5px solid var(--primary);
+  }
+  100% {
+    top: -25px;
+    height: 100%;
+    width: 100%;
+    border-right: 5px solid var(--primary);
+    border-top: 5px solid var(--primary);
+  }
+}
+
+@keyframes borderInTwo {
+  0% {
+    height: 0%;
+    width: 0%;
+    border-left: none;
+    border-bottom: none;
+  }
+  50% {
+    height: 0%;
+    width: 0%;
+    border-left: none;
+    border-bottom: none;
+  }
+  75% {
+    height: 100%;
+    width: 0%;
+    border-left: 5px solid var(--primary);
+    border-bottom: 5px solid var(--primary);
+  }
+  100% {
+    height: 100%;
+    width: 100%;
+    border-left: 5px solid var(--primary);
+    border-bottom: 5px solid var(--primary);
+  }
+}
+
+.img-holder img {
+  opacity: 0;
+  transform: scale(1);
+}
+
+.img-holder.animate img {
+  animation: imageIn 0.5s ease;
+  animation-delay: 1s;
+  transition: opacity 0.1s, transform 0.75s;
+  transition-delay: 1s;
+  transform: scale(1);
+  opacity: 1;
+}
+
+.img-holder.animate::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  height: 100%;
+  background: var(--primary);
+  z-index: 1;
+  animation: coverOut 0.5s ease;
+  animation-delay: 1s;
+  width: 0%;
+  right: 0;
+}
+
+.img-holder.animate .border-animation-span {
+  border: none !important; /* if it had any border initially */
+}
+
+.img-holder.animate .border-animation-span::before {
+  content: "";
+  position: absolute;
+  top: -25px;
+  right: 25px;
+  border-top: 5px solid var(--primary);
+  border-right: 5px solid var(--primary);
+  height: 100%;
+  width: 100%;
+  z-index: 0;
+  opacity: 1;
+  animation: borderIn 1s ease;
+  box-sizing: border-box;
+}
+
+.img-holder.animate .border-animation-span::after {
+  content: "";
+  position: absolute;
+  left: -25px;
+  top: -25px; /* Corrected from original CSS which had top: -25px, assuming bottom-left corner means left: -25px, bottom: -25px or similar. Sticking to original top: -25px for now. */
+  border-bottom: 5px solid var(--primary);
+  border-left: 5px solid var(--primary);
+  height: 100%;
+  width: 100%;
+  z-index: 0;
+  opacity: 1;
+  animation: borderInTwo 1s ease;
+  box-sizing: border-box;
+}
+
+/* End Homepage Animation Styles */
 
 @layer base {
   * {

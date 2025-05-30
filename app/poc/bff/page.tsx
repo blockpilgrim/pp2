@@ -149,10 +149,37 @@ export default function BffPocPage() {
       <div className="space-y-8">
         <header className="mb-8">
           <h1 className="text-3xl font-bold">Backend-for-Frontend (BFF) Pattern POC</h1>
-          <p className="text-muted-foreground mt-2 text-lg">
-            This page demonstrates interactions with Next.js API Routes acting as a BFF.
-            It showcases GET, POST, and PATCH operations for a mock "items" resource.
-          </p>
+          
+          <div className="mt-6 space-y-4">
+            <div>
+              <h2 className="text-xl font-semibold mb-2">What is the BFF Pattern?</h2>
+              <p className="text-muted-foreground">
+                The Backend-for-Frontend (BFF) pattern creates a dedicated API layer between the frontend application 
+                and backend services. Instead of calling external APIs directly from the client, the frontend communicates 
+                with a BFF that aggregates, transforms, and secures data from multiple backend sources.
+              </p>
+            </div>
+            
+            <div>
+              <h2 className="text-xl font-semibold mb-2">Why Use BFF?</h2>
+              <ul className="text-muted-foreground space-y-1 list-disc list-inside">
+                <li><strong>Security:</strong> API keys and sensitive credentials stay server-side</li>
+                <li><strong>Data Aggregation:</strong> Combine multiple backend calls into optimized responses</li>
+                <li><strong>Authentication:</strong> Centralized session validation and authorization checks</li>
+                <li><strong>Simplified Client:</strong> Frontend focuses on UI, not complex backend integrations</li>
+              </ul>
+            </div>
+            
+            <div>
+              <h2 className="text-xl font-semibold mb-2">This POC Demonstrates:</h2>
+              <p className="text-muted-foreground">
+                Next.js API Routes (<code className="bg-muted px-1 rounded">/api/bff-poc/items</code>) acting as a BFF layer, 
+                with secure server-side operations including authentication checks, input validation, and error handling. 
+                The interface below showcases <strong>GET</strong>, <strong>POST</strong>, and <strong>PATCH</strong> operations 
+                for a mock "items" resource.
+              </p>
+            </div>
+          </div>
         </header>
 
         {error && (

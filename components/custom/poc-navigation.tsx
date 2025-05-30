@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react'; // Import useSession and signOut
@@ -15,12 +15,17 @@ export function PocNavigation() {
   const pathname = usePathname();
   const { data: session, status } = useSession(); // Get session data and status
   const { theme } = useTheme(); // Get current theme
+  const [hasMounted, setHasMounted] = useState(false);
+
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
   
   const navItems = [
-    { name: "Core POC", href: "/poc/core" },
     { name: "Auth POC", href: "/poc/auth" },
     { name: "UI POC", href: "/poc/ui" },
     { name: "BFF POC", href: "/poc/bff" },
+    { name: "State POC", href: "/poc/state" },
     // Future POCs like State Management and Leads Mini-App can be added here
   ];
 
@@ -32,31 +37,33 @@ export function PocNavigation() {
           <div className="flex items-center">
             <Link 
               href="/" 
-              className="flex items-center mr-6 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm"
+              className="flex items-center mr-8 py-2 px-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm"
               aria-label="Partner Portal Home"
             >
-              {theme === 'light-orange' ? (
+              {!hasMounted ? (
+                // Fallback for server-side rendering and initial client render before hydration
+                // This ensures the server and client render the same initial output.
                 <Image 
-                  src="/ar.svg" 
+                  src="/ec-logo.svg" 
                   alt="Partner Portal Logo" 
-                  width={125} 
+                  width={70} 
                   height={30} 
                   priority 
                 />
-              ) : theme === 'light-green' ? (
+              ) : theme === 'light-orange' ? (
                 <Image 
-                  src="/ar.svg" 
-                  alt="Partner Portal Logo" 
-                  width={125} 
+                  src="/ectn-logo.svg" 
+                  alt="Partner Portal Logo - Orange Theme" 
+                  width={70} 
                   height={30} 
                   priority 
                 />
               ) : (
-                // Fallback to default logo if theme is not yet determined or on initial render
+                // Default to EC logo for light-green or any other theme once mounted
                 <Image 
-                  src="/ar.svg" 
-                  alt="Partner Portal Logo" 
-                  width={125} 
+                  src="/ec-logo.svg" 
+                  alt="Partner Portal Logo - Default/Green Theme" 
+                  width={70} 
                   height={30} 
                   priority 
                 />
@@ -88,7 +95,10 @@ export function PocNavigation() {
 
             {status === "authenticated" && session?.user && (
               <>
-                <div className="flex flex-col items-end mr-4">
+                <Link 
+                  href="/profile"
+                  className="flex flex-col items-end mr-4 hover:opacity-80 transition-opacity"
+                >
                   <span className="text-sm">
                     Welcome, {session.user.name || 'User'}
                     {session.user.isD365User === false && ( // Explicitly check for false
@@ -113,11 +123,9 @@ export function PocNavigation() {
                       {session.user.states.map(state => getStateDisplayName(state)).join(', ')}
                     </span>
                   )}
-
-                </div>
+                </Link>
                 <Button variant="outline" size="sm" onClick={() => signOut({ callbackUrl: '/' })} className="text-nav-foreground border-nav-foreground hover:bg-nav-foreground hover:text-nav">
                   Sign Out
-
                 </Button>
               </>
             )}

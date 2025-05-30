@@ -47,7 +47,7 @@ This checklist represents features organized by POC module, with each module foc
 - [x] Create centralized error handling utilities (`lib/utils/error-handler.ts`, `DataverseError` in `d365Client.ts`)
 - [x] Add comprehensive API error responses (demonstrated in `d365Client.ts`)
 - [ ] **Security Baseline**: Implement robust server-side input validation (using Zod or similar) for all API route inputs to prevent common vulnerabilities (XSS, injection, etc.).
-- [x] Build working demo at `/poc/core` demonstrating data integration
+- [x] ~~Build working demo at `/poc/core` demonstrating data integration~~ (Removed: Dataverse client integration is demonstrated via Authentication & Authorization POC and Profile features)
 - [ ] **Security Baseline**: Conduct Dataverse Least Privilege Audit:
     - [ ] Document permissions assigned to the application's service principal in D365.
     - [ ] Confirm permissions adhere to the principle of least privilege for all Dataverse operations.
@@ -73,15 +73,24 @@ This checklist represents features organized by POC module, with each module foc
 - [x] **State Assignment Support:** Extended D365ContactService to parse state assignments using prefix notation (e.g., "state:arkansas")
 - [x] **State Theme Integration:** Implemented automatic theme suggestions based on user's D365 state assignments
 - [ ] **Thorough Testing (End-to-End) (Current Focus):**
-    - [ ] User exists in Azure AD and D365 (with roles correctly mapped).
-    - [ ] User exists in Azure AD but not in D365 (or not linked).
-    - [ ] Various D365 role configurations and error scenarios (e.g., API errors, malformed role data).
+    - **Authentication & Authorization POC:**
+        - [ ] User exists in Azure AD and D365 (with roles correctly mapped).
+        - [ ] User exists in Azure AD but not in D365 (or not linked).
+        - [ ] Test different D365 role configurations and error/edge cases.
+        - [ ] Verify `updateContactProfile` functionality (once implemented).
+        - [ ] Monitor server-side logs for D365 integration details.
+    - **State Management & Data Handling POC Follow-up:**
+        - [ ] Conduct thorough testing of all CRUD operations (add, edit, toggle, delete items) on the `/poc/state` page, including optimistic update behavior and error handling (e.g., simulate API errors).
+        - [ ] Verify client-side validation (Zod + React Hook Form) for the add item form, testing various valid and invalid inputs.
+        - [ ] Test the Zustand-based item filtering (`all`, `active`, `completed`) to ensure it correctly updates the displayed list.
+        - [ ] Review the implementation for any potential race conditions or edge cases, especially with optimistic updates.
+        - [ ] Consider adding more robust UI feedback for ongoing operations or errors (e.g., using toast notifications if `sonner` is integrated).
 - [ ] **Security Baseline**: Verify session cookie attributes (HttpOnly; Secure, typically default in prod; SameSite=Lax or Strict; appropriate expiry).
 - [ ] **Security Baseline**: Test session lifecycle thoroughly (e.g., proper invalidation on logout, session timeout behavior, handling of concurrent sessions if applicable).
-- [ ] Update UI components further to display D365-sourced profile information (e.g., on a dedicated profile page).
+- [x] Update UI components further to display D365-sourced profile information (e.g., on a dedicated profile page).
 - [ ] Adapt UI/UX based on `isD365User` status more broadly.
 - [ ] Refine error handling in auth flow for D365 integration issues (e.g., user-facing messages for `D365LookupFailed`).
-- [ ] Implement `updateContactProfile` in `D365ContactService` with actual D365 client call and test profile updates from the portal.
+- [x] Implement `updateContactProfile` in `D365ContactService` with actual D365 client call and test profile updates from the portal.
 
 **POC Goal**: Demonstrate secure authentication patterns using Azure AD, with user profile details and application-specific roles managed in Dynamics 365, and role-based access control integrated throughout the application. Ensure robust and secure session management.
 
@@ -111,13 +120,20 @@ This checklist represents features organized by POC module, with each module foc
 **POC Goal**: Demonstrate the Backend-for-Frontend architectural pattern using Next.js API routes to create a secure communication layer between the frontend and backend services, with comprehensive server-side input validation and minimized data exposure.
 
 ### State Management & Data Handling POC
-- [ ] Configure Zustand store for global state management
-- [ ] Set up TanStack Query client with caching strategies
-- [ ] Implement React Query dev tools for debugging
-- [ ] Create data validation layer with Zod (ensure this primarily refers to client-side validation, with server-side being the authoritative source).
-- [ ] **Security Baseline**: Ensure all data mutations triggered from the client are subject to robust server-side input validation (as covered in BFF POC) before affecting state or backend systems.
-- [ ] Demonstrate optimistic updates pattern
-- [ ] Build working demo at `/poc/state` showing data flow
+- [x] Establish patterns for client-side state management (Zustand)
+- [x] Implement data fetching and caching strategies (React Query)
+- [x] Demonstrate optimistic updates pattern
+- [x] Create data validation layer with Zod (client-side validation for forms, complementing server-side validation in API routes).
+- [x] Implement React Query dev tools for debugging
+- [ ] **Security Baseline**: Ensure all data mutations triggered from the client are subject to robust server-side input validation (as covered in BFF POC) before affecting state or backend systems. (Note: Server-side validation for `/api/state-poc/items` was implemented using Zod).
+
+**Patterns Established in `/poc/state`:**
+- **TanStack Query (React Query):** Used for all server-side data interactions (fetching, creating, updating, deleting items) with optimistic updates for a responsive UI. Query keys are used for cache management.
+- **Zod & React Hook Form:** Zod schemas define client-side validation rules for forms, integrated with React Hook Form.
+- **Zustand:** Manages global client-side UI state not persisted on the server (e.g., item display filters). Stores are lean and focused.
+- **React `useState`:** Used for local component state.
+- **Separation of Concerns:** Clear distinction between server state (TanStack Query), global client UI state (Zustand), and local component state (`useState`).
+- [x] Build working demo at `/poc/state` showing data flow
 
 **POC Goal**: Establish patterns for state management, data fetching, and validation that can be applied consistently across the application, emphasizing that server-side validation is paramount for security.
 
@@ -176,9 +192,6 @@ Based on the implemented features and security-first principles, the following u
 - Follow the project's [Vitest Guidelines](./vitest-guidelines.md)
 
 **Testing Goal**: Establish and maintain a comprehensive testing strategy that ensures code quality, stability, and maintainability, aligning with our core principles (Security, Stability, Scalability, Maintainability, Knowledge Sharing, Clarity, Simplicity, Modern Best Practices). This includes robust unit tests for business logic and utilities, component tests for UI interactions, and a plan for future integration and end-to-end testing. All tests should be clear, easy to understand, and contribute to a reliable and secure application. Refer to the [Vitest Testing Framework: Guidelines and Best Practices](./vitest-guidelines.md) for detailed guidance.
-=======
-**Testing Goal**: Establish consistent testing patterns that can be applied across all POC modules, incorporating baseline security verification checks into the QA process.
->>>>>>> 1e8588d (Revert "```")
 
 ### Deployment & Documentation
 - [ ] Set up deployment pipeline example
