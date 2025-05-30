@@ -1,1 +1,0 @@
-- at the beginning of each new chat session, always read `handoff-summary.md` (in project root directory) in order to fully understand project goals, progress, trajectory, guiding principles, and all other important guidance regarding development within my project.

@@ -28,7 +28,7 @@ Rationale:
 - Maintainability: Reduces the amount of code to maintain and test.
 - Clarity: Streamlines the POCs to focus on distinct, non-overlapping concerns.
 Implications:
-- The `handoff-summary.md` was updated to reflect this change.
+- The `project-charter.md` was updated to reflect this change.
 - Navigation links to `/poc/core` were removed from `poc-navigation.tsx` and `app/page.tsx`.
 - The `app/poc/core` directory and `app/api/dataverse/test` directory were deleted.
 - Future demonstrations of Dataverse client capabilities will rely on the Authentication POC, Profile page, and other feature-specific implementations.

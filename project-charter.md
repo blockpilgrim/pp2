@@ -298,26 +298,6 @@ The development of each POC will follow this progression:
 
 This methodical approach ensures that at each stage, we have working functionality that can be demonstrated, validated, and confirmed against security requirements.
 
-## Session Planning Guide
-
-This section provides guidance for structuring productive AI conversations to develop each feature area:
-
-### Conversation Structure
-1. **Start with Context**: Begin each session by referencing the handoff summary and previous work
-2. **Identify Goals**: Clearly specify which feature subset you're targeting in the current session
-3. **Establish Requirements**: List specific requirements for the feature being developed
-4. **Implementation Strategy**: Discuss approach before diving into code
-5. **Code Implementation**: Develop the feature while explaining key decisions
-6. **Review & Refine**: Evaluate the implementation against guiding principles
-7. **Document**: Update Feature Checklist progress as we go. Update BOTH the Decisions Log (./decisions-log.md) and Technical Debt document (./technical-debt.md) when completing a POC
-
-### Tips for Effective AI Sessions
-- Focus on one conceptual area per conversation
-- Provide clear acceptance criteria for features
-- Request explanations for complex implementation choices
-- Ask for suggestions on alternative approaches
-- Reference specific sections of the handoff summary to maintain alignment
-
 ## Project References
 
 ### Key References
@@ -325,51 +305,11 @@ This section provides guidance for structuring productive AI conversations to de
 - [Decisions Log](./decisions-log.md) - Documentation of architectural and implementation decisions
 - [Technical Debt Tracking](./technical-debt.md) - Known technical debt items and remediation plans
 
-These files are separated from the main handoff summary to optimize context window usage during AI pairing sessions. Reference them as needed for detailed architectural discussions or when addressing technical debt.
+Reference these files as needed for detailed architectural discussions or when addressing technical debt.
 
 ## Current Focus Area
 
-**Testing Dynamics 365 Integration for Authentication & Authorization POC**
-
-With state-specific theming now complete, the focus returns to finalizing the Authentication & Authorization POC by conducting thorough end-to-end testing of the D365 integration. This includes verifying the state assignment parsing and theme suggestions work correctly with real D365 data.
-
-<!-- **Previous Implementation Details:**
-
-The current effort involves completing the integration of Dynamics 365 (D365) as the source of truth for user profile information and application-specific roles. Azure Active Directory (Azure AD) remains the primary authentication provider.
-
-**Implementation Plan & Progress:**
-
-1.  **Strategy Definition (Completed):** Established a hybrid approach: Azure AD for authentication, D365 for user profiles (Contact records) and application roles. `Auth.js` orchestrates this.
-2.  **`D365ContactService` Creation & Configuration (Completed):** Service (`lib/services/d365ContactService.ts`) created and configured to use environment variables for D365 field names.
-3.  **`Auth.js` Callback Modifications (Completed):** `jwt` and `session` callbacks in `lib/auth.ts` updated to fetch and integrate D365 contact data.
-4.  **Type Augmentation (Completed):** TypeScript declarations for `Session` and `JWT` extended.
-5.  **D365 Setup & Environment Configuration (User Confirmed Completed):** Necessary fields in D365 (for AAD Object ID and App Roles) are set up, and local `.env` files are populated with their logical names.
-6.  **UI Updated (Completed):** `poc-navigation.tsx` now displays D365 user status and session errors.
-7.  **Adapt `mapD365RolesToAppRoles` (Completed):**
-    *   The developer has confirmed that the D365 `APP_ROLES_FIELD` uses a comma-separated string format.
-    *   The existing `mapD365RolesToAppRoles` method in `lib/services/d365ContactService.ts` correctly handles this format. Other parsing examples remain commented out for future reference.
-8.  **Verify `d365Client` Functionality (Initial Verification Completed):**
-    *   `lib/clients/d365Client.ts` now initializes correctly in both server and client environments (client-side instance is non-functional by design, preventing crashes related to server-only environment variables).
-    *   Further verification of Dataverse API request success will occur during end-to-end testing.
-
-**Next Steps for Auth POC Refinement:**
-
-1.  **Thorough End-to-End Testing (CRITICAL - Current Focus):**
-    *   Restart the Next.js application.
-    *   Test Case 1: User in AAD & D365 with correctly mapped roles. Verify `session.user` details (including roles and `isD365User: true`).
-    *   Test Case 2: User in AAD, not in D365 (or not linked via AAD Object ID). Verify default roles (e.g., `UserRole.USER`) and `session.user.isD365User: false`.
-    *   Test Case 3: Different D365 role configurations and error/edge cases (e.g., empty roles field, roles not defined in `UserRole` enum, leading/trailing spaces around roles/commas).
-    *   Monitor server-side console logs for debugging messages from `D365ContactService` and `lib/auth.ts`, especially regarding D365 contact lookup and role mapping.
-2.  **Implement `updateContactProfile` (Post-Testing):**
-    *   Complete the `updateContactProfile` method in `D365ContactService` by ensuring `d365Client.updateContact` is called correctly with the appropriate D365 contact ID and payload.
-    *   Create a basic UI (e.g., a simple form on a profile page) and a corresponding API route to allow users to update parts of their D365 profile (e.g., first name, last name) from the portal.
-3.  **UI/UX Enhancements (Post-Testing):**
-    *   Further update UI components to display more D365-sourced profile information (e.g., on a dedicated profile page or dashboard).
-    *   Refine how the application behaves for users with `isD365User: false` (e.g., display a message prompting them to contact support if they expect D365 access).
-4.  **Refine Error Handling (Post-Testing):**
-    *   Implement more user-friendly display of session errors related to D365 integration (e.g., using toast notifications for `D365LookupFailed` or similar errors surfaced in `session.error`).
-
-*Last updated: 2025-05-29*  -->
+Continue hammering away at POCs in Feature Checklist
 
 ---
 

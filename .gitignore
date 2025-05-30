@@ -40,10 +40,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-**/.claude/settings.local.json
-
-**/CLAUDE.local.md
-.aider*
-
 # Vitest
 .vitest_cache/
+
+# ai
+.aider*
+*claude*
