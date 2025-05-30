@@ -55,13 +55,13 @@ export function getDefaultThemeFromStates(states?: string[]): Theme | null {
  */
 export function getStateDisplayName(state: string): string {
   const stateNames: Record<string, string> = {
-    'tennessee': 'Tennessee',
-    'arkansas': 'Arkansas',
-    'oregon': 'Oregon',
-    'alabama': 'Alabama',
-    'mississippi': 'Mississippi',
-    'louisiana': 'Louisiana',
-    'kentucky': 'Kentucky',
+    'tennessee': 'Every Child Tennessee',
+    'arkansas': 'Every Child Arkansas',
+    'oregon': 'Every Child Oregon',
+    'alabama': 'Every Child Alabama',
+    'mississippi': 'Every Child Mississippi',
+    'louisiana': 'Every Child Louisiana',
+    'kentucky': 'Every Child Kentucky',
   };
   
   return stateNames[state.toLowerCase()] || state;

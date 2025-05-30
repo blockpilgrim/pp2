@@ -90,6 +90,13 @@
   /* Nav colors remain the same as :root for consistency */
 }
 
+.theme-light-purple {
+  --primary: #AE8BD1; /* Light Purple */
+  --button-primary-bg: var(--primary);
+  --button-primary-bg-hover: oklch(from var(--primary) calc(l - 0.07) c h); /* Darken primary by 7% for hover */
+  /* --primary-foreground can be inherited or specified if different */
+}
+
 
 @layer base {
   * {

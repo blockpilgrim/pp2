@@ -5,13 +5,9 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 
 export default function UiShowcasePage() {
   return (
-    <div className="min-h-screen bg-background">
-      {/* Main Content */}
-      <main className="p-6">
-        <div className="max-w-4xl mx-auto">
-          <div className="mb-16">
-            <h2 className="text-2xl font-bold mb-6 pb-2 border-b">UI Framework & Design System POC</h2>
-            <div className="space-y-6">
+    <div className="container mx-auto py-8">
+      <h1 className="text-3xl font-bold mb-6">UI Framework & Design System POC</h1>
+      <div className="space-y-6">
               <Card>
                 <CardHeader>
                   <CardTitle>What is shadcn/ui?</CardTitle>
@@ -22,9 +18,9 @@ export default function UiShowcasePage() {
                     copy-and-paste components built using Radix UI primitives and styled with Tailwind CSS. This revolutionary approach 
                     gives you complete ownership and control over your component code.
                   </p>
-                  <p className="text-muted-foreground">
+                  <p className="text-muted-foreground mb-4">
                     Components are copied directly into your codebase, becoming part of your project rather than an external dependency. 
-                    This means you can modify, extend, or remove any part of a component to fit your exact needs.
+                    This means you can modify, extend, or remove any part of a component to fit your exact needs. In other words, shadcn/ui is not a component library—it is how you build <i>your own</i> component library.
                   </p>
                 </CardContent>
               </Card>
@@ -142,10 +138,7 @@ export default function UiShowcasePage() {
                   </p>
                 </CardContent>
               </Card>
-            </div>
-          </div>
-        </div>
-      </main>
+      </div>
     </div>
   );
 }
