@@ -148,7 +148,8 @@ export function ProfileForm({ initialData, onUpdateSuccess }: ProfileFormProps) 
   }
 
   return (
-    <Card>
+    <> {/* Wrap in a Fragment to return multiple Card elements */}
+      <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
@@ -262,7 +263,7 @@ export function ProfileForm({ initialData, onUpdateSuccess }: ProfileFormProps) 
               name="portalRolesRaw"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Portal Access</FormLabel>
+                  <FormLabel>Portal Roles & State Assignment</FormLabel>
                   <FormControl>
                     <Textarea 
                       {...field} 
@@ -272,9 +273,17 @@ export function ProfileForm({ initialData, onUpdateSuccess }: ProfileFormProps) 
                       className="font-mono text-sm"
                     />
                   </FormControl>
-                  <FormDescription>
-                    Format: role:name,state:name. Roles: user, partner, admin. 
-                    Note: Changing roles or states requires signing out and back in.
+                  <FormDescription className="mt-1.5">
+                    Format: "role:name,state:name" (no quotes)
+                  </FormDescription>
+                  <FormDescription className="mt-1.5">  
+                    Available Roles: user, partner, admin
+                  </FormDescription>
+                  <FormDescription className="mt-1.5">
+                    Available States: Oregon, Arkansas, Kentucky
+                  </FormDescription>
+                  <FormDescription className="mt-1.5">
+                    Note: Changing roles or states requires signing out and back in
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -302,5 +311,77 @@ export function ProfileForm({ initialData, onUpdateSuccess }: ProfileFormProps) 
         </Form>
       </CardContent>
     </Card>
+
+      <Card className="mt-8">
+        <CardHeader>
+          <CardTitle>How Your Profile Works</CardTitle>
+          <CardDescription>
+            A quick look at how your portal access, roles, and state-specific features work.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div>
+            <h3 className="text-lg font-semibold mb-2">Your Sign-In & D365 Connection</h3>
+            <p className="text-sm text-muted-foreground">
+              You sign in to this portal using your Microsoft Entra ID (Azure AD) account. Once you&apos;re in, the portal uses your Azure AD Object ID to find your profile in Dynamics 365. This connection lets us grab your profile details, portal roles, and any state-specific settings that dictate your theme and access to features.
+            </p>
+            <p className="text-sm text-muted-foreground mt-2">
+              Your Azure AD Object ID is saved in the <code>Microsoft Entra ID</code> field in your D365 Contact record (logical name: <code>msevtmgt_aadobjectid</code>). This ID is what links your portal account to your D365 info.
+            </p>
+          </div>
+
+          <div>
+            <h3 className="text-lg font-semibold mb-2">Portal Roles & State Settings</h3>
+            <p className="text-sm text-muted-foreground">
+              Your portal roles (like User, Partner, or Admin) and any state assignments (like Arkansas or Oregon) are managed in one text field in your D365 Contact record. Note: A text field was used for <strong>POC testing purposes only</strong>. The values in this field can change your theme or what features you see.
+            </p>
+            <p className="text-sm text-muted-foreground mt-2">
+              This D365 field (display name: <code>Portal Role(s)</code>, logical name: <code>crda6_portalroles</code>) uses a comma-separated string with prefixes to store this info. For example:
+            </p>
+            <ul className="list-disc list-inside text-sm text-muted-foreground mt-2 pl-5 space-y-1">
+              <li><code>role:partner,state:arkansas,role:user</code></li>
+              <li>This means the user is a &apos;Partner&apos;, linked to &apos;Arkansas&apos;, and also a general &apos;User&apos;.</li>
+            </ul>
+            <p className="text-sm text-muted-foreground mt-2">
+              The &apos;Portal Roles & State Assignment&apos; field in the form above lets you see and edit this D365 setting.
+            </p>
+          </div>
+
+          <div>
+            <h3 className="text-lg font-semibold mb-2">Quick Guide: Adding or Updating Users</h3>
+            <p className="text-sm text-muted-foreground">
+              To add a new user or change someone&apos;s access, here’s what to do:
+            </p>
+            <ol className="list-decimal list-inside text-sm text-muted-foreground mt-2 space-y-2 pl-5">
+              <li>
+                <strong>Get Azure AD Object ID:</strong>
+                <br />
+                Go to the Microsoft Entra ID (Azure AD) admin center. Find the user and copy their Object ID (sometimes called &apos;oid&apos;).
+              </li>
+              <li>
+                <strong>Update D365 Contact:</strong>
+                <ul className="list-disc list-inside ml-5 mt-1 space-y-1">
+                  <li>In Dynamics 365, find or create the user&apos;s Contact record.</li>
+                  <li>
+                    Paste their Azure AD Object ID into the <code>Microsoft Entra ID</code> field (logical name: <code>msevtmgt_aadobjectid</code>).
+                  </li>
+                  <li>
+                    Then, in the <code>Portal Role(s)</code> field (logical name: <code>crda6_portalroles</code>), type in their roles and states using the format: <code>role:admin,state:arkansas</code>.
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <strong>Sign In:</strong>
+                <br />
+                The user can now sign in with their Microsoft Entra ID. The portal will automatically pick up their new settings from D365.
+              </li>
+            </ol>
+            <p className="text-sm text-muted-foreground mt-3">
+              <strong>Heads up:</strong> If roles or states change (in D365 or here), the user needs to sign out and back in for everything (like themes and permissions) to update correctly.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    </>
   );
 }
