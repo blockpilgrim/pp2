@@ -462,39 +462,92 @@ export default function StatePocPage() {
         </CardContent>
       </Card>
 
-      <section className="prose dark:prose-invert max-w-none">
-        <h2 className="text-2xl font-semibold">Explanation of Patterns</h2>
-        <p>
-          This page demonstrates key patterns for modern frontend development:
-        </p>
-        <ul>
-          <li>
-            <strong>TanStack Query (React Query):</strong> Used for fetching, caching, synchronizing, and updating server state.
-            It simplifies data fetching logic, handles loading/error states, provides caching out-of-the-box (reducing redundant API calls),
-            and enables advanced features like optimistic updates and automatic cache invalidation after mutations.
-          </li>
-          <li>
-            <strong>Zustand:</strong> A small, fast, and scalable bearbones state-management solution. It's used here for managing global client-side state
-            that doesn't necessarily come from or sync with a server (e.g., UI preferences, ephemeral state shared across distant components).
-            It's chosen for its simplicity and minimal boilerplate compared to other solutions like Redux for cases where TanStack Query's cache isn't the right fit.
-          </li>
-          <li>
-            <strong>Zod:</strong> A TypeScript-first schema declaration and validation library. It's used here to define data schemas and validate
-            form inputs on the client-side before data is sent to the server. This provides immediate feedback to users and reduces invalid requests.
-            Zod can also be used on the server-side for robust validation (as seen in the API route for this POC).
-          </li>
-          <li>
-            <strong>React Hook Form:</strong> Used for building performant and flexible forms. It integrates seamlessly with Zod for validation.
-          </li>
-        </ul>
-        <h3 className="text-xl font-semibold">Benefits</h3>
-        <ul>
-          <li><strong>Improved Developer Experience:</strong> Clear separation of concerns, less boilerplate for data fetching and state management.</li>
-          <li><strong>Better Performance:</strong> Caching reduces API calls, optimistic updates make the UI feel faster.</li>
-          <li><strong>Enhanced User Experience:</strong> Clear loading/error states, instant feedback from client-side validation.</li>
-          <li><strong>Maintainability:</strong> Well-defined patterns make the codebase easier to understand and scale.</li>
-        </ul>
-      </section>
+      <Card>
+        <CardHeader>
+          <CardTitle>Explanation of Patterns</CardTitle>
+          <CardDescription>
+            This page demonstrates key patterns for modern frontend development
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="grid gap-6 md:grid-cols-2">
+            <div className="space-y-3">
+              <h3 className="text-lg font-semibold">TanStack Query (React Query)</h3>
+              <p className="text-sm text-muted-foreground">
+                Used for fetching, caching, synchronizing, and updating server state.
+                It simplifies data fetching logic, handles loading/error states, provides caching out-of-the-box (reducing redundant API calls),
+                and enables advanced features like optimistic updates and automatic cache invalidation after mutations.
+              </p>
+            </div>
+            
+            <div className="space-y-3">
+              <h3 className="text-lg font-semibold">Zustand</h3>
+              <p className="text-sm text-muted-foreground">
+                A small, fast, and scalable bearbones state-management solution. It's used here for managing global client-side state
+                that doesn't necessarily come from or sync with a server (e.g., UI preferences, ephemeral state shared across distant components).
+                It's chosen for its simplicity and minimal boilerplate compared to other solutions like Redux for cases where TanStack Query's cache isn't the right fit.
+              </p>
+            </div>
+            
+            <div className="space-y-3">
+              <h3 className="text-lg font-semibold">Zod</h3>
+              <p className="text-sm text-muted-foreground">
+                A TypeScript-first schema declaration and validation library. It's used here to define data schemas and validate
+                form inputs on the client-side before data is sent to the server. This provides immediate feedback to users and reduces invalid requests.
+                Zod can also be used on the server-side for robust validation (as seen in the API route for this POC).
+              </p>
+            </div>
+            
+            <div className="space-y-3">
+              <h3 className="text-lg font-semibold">React Hook Form</h3>
+              <p className="text-sm text-muted-foreground">
+                Used for building performant and flexible forms. It integrates seamlessly with Zod for validation,
+                providing excellent developer experience with minimal re-renders and built-in validation support.
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Benefits of This Architecture</CardTitle>
+          <CardDescription>
+            Key advantages of using these modern frontend patterns together
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="border-l-4 border-primary pl-4">
+              <h4 className="font-semibold">Improved Developer Experience</h4>
+              <p className="text-sm text-muted-foreground mt-1">
+                Clear separation of concerns, less boilerplate for data fetching and state management.
+              </p>
+            </div>
+            
+            <div className="border-l-4 border-primary pl-4">
+              <h4 className="font-semibold">Better Performance</h4>
+              <p className="text-sm text-muted-foreground mt-1">
+                Caching reduces API calls, optimistic updates make the UI feel faster.
+              </p>
+            </div>
+            
+            <div className="border-l-4 border-primary pl-4">
+              <h4 className="font-semibold">Enhanced User Experience</h4>
+              <p className="text-sm text-muted-foreground mt-1">
+                Clear loading/error states, instant feedback from client-side validation.
+              </p>
+            </div>
+            
+            <div className="border-l-4 border-primary pl-4">
+              <h4 className="font-semibold">Maintainability</h4>
+              <p className="text-sm text-muted-foreground mt-1">
+                Well-defined patterns make the codebase easier to understand and scale.
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
