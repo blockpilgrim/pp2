@@ -17,18 +17,28 @@ export function StateThemeChecker() {
   const { theme, setTheme } = useTheme(); // Get current theme to compare
 
   useEffect(() => {
+    // Debug logging
+    console.log('[StateThemeChecker] Session status:', status);
+    console.log('[StateThemeChecker] User states:', session?.user?.states);
+    console.log('[StateThemeChecker] Current theme:', theme);
+    
     // Ensure session is loaded and user has states defined
     if (status !== 'authenticated' || !session?.user?.states || session.user.states.length === 0) {
+      console.log('[StateThemeChecker] Exiting early - no authenticated session with states');
       return;
     }
 
     // Determine the theme based on D365 state
     const stateTheme = getDefaultThemeFromStates(session.user.states);
+    console.log('[StateThemeChecker] State theme determined:', stateTheme);
 
     // Only apply the D365 state theme if it's different from the current theme.
     // This check is still useful to avoid unnecessary setTheme calls if the theme is already correct.
     if (stateTheme && stateTheme !== theme) {
+      console.log(`[StateThemeChecker] Setting theme from ${theme} to ${stateTheme}`);
       setTheme(stateTheme);
+    } else {
+      console.log('[StateThemeChecker] No theme change needed');
     }
     // By removing 'theme' from the dependency array below, this effect will primarily run
     // on session load/change. Manual theme changes will not immediately trigger this effect
