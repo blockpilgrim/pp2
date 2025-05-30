@@ -41,9 +41,12 @@ export async function POST(request: NextRequest) {
   try {
     const { theme } = await request.json();
     
-    if (!theme || (theme !== 'light-orange' && theme !== 'light-green')) {
+    // Check if theme is valid
+    const validThemes: Theme[] = ['light-orange', 'light-green', 'light-purple'];
+    if (!theme || !validThemes.includes(theme)) {
+      console.error(`Invalid theme value received: ${theme}`);
       return NextResponse.json(
-        { error: 'Invalid theme value' },
+        { error: `Invalid theme value: ${theme}. Valid themes are: ${validThemes.join(', ')}` },
         { status: 400 }
       );
     }
