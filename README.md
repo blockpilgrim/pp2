@@ -33,3 +33,4 @@ Open [http://localhost:3000](http://localhost:3000) to view the application.
 - `project-charter.md` - Project status and development roadmap
 - `decisions-log.md` - Log of architectural and implementation decisions made during development
 - `vitest-guidelines.md` - Testing guidelines
+test
