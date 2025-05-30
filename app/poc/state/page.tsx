@@ -13,7 +13,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Checkbox } from '@/components/ui/checkbox';
 // import { Toaster } from '@/components/ui/sonner'; // Commented out to resolve import error
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Terminal, Trash2, Pencil, CheckSquare, Square } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Terminal, Trash2, Pencil, CheckSquare, Square, RotateCcw, Info } from 'lucide-react';
 
 // Zod schema for item validation (client-side)
 const itemFormSchema = z.object({
@@ -46,8 +47,17 @@ const fetchItems = async (): Promise<Item[]> => {
 
 export default function StatePocPage() {
   const [editingItem, setEditingItem] = useState<{ id: string; text: string } | null>(null);
+  const [mutationError, setMutationError] = useState<string | null>(null);
   const queryClient = useQueryClient();
   const { filter: currentFilter, setFilter } = useItemFilterStore();
+
+  // Clear error after 5 seconds
+  React.useEffect(() => {
+    if (mutationError) {
+      const timer = setTimeout(() => setMutationError(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [mutationError]);
 
   // 1. TanStack Query: Fetching data
   const { data: items, isLoading, isError, error: itemsError } = useQuery<Item[], Error>({
@@ -117,7 +127,7 @@ export default function StatePocPage() {
         if (context?.previousItems) {
           queryClient.setQueryData(['pocItems'], context.previousItems);
         }
-        console.error(`Failed to add item: ${err.message}`); // toast.error(`Failed to add item: ${err.message}`);
+        setMutationError(`Failed to add item: ${err.message}`);
       },
       onSettled: () => {
         // Invalidate and refetch after error or success
@@ -166,7 +176,7 @@ export default function StatePocPage() {
         if (context?.previousItems) {
           queryClient.setQueryData(['pocItems'], context.previousItems);
         }
-        console.error(`Failed to toggle item: ${err.message}`); // toast.error(`Failed to toggle item: ${err.message}`);
+        setMutationError(`Failed to toggle item: ${err.message}`);
       },
       onSettled: (data, error, variables) => {
         // Invalidate the specific item or refetch all. For simplicity, refetch all.
@@ -217,7 +227,7 @@ export default function StatePocPage() {
         if (context?.previousItems) {
           queryClient.setQueryData(['pocItems'], context.previousItems);
         }
-        console.error(`Failed to delete item ${itemId}: ${err.message}`); // toast.error(`Failed to delete item ${itemId}: ${err.message}`);
+        setMutationError(`Failed to delete item: ${err.message}`);
       },
       onSettled: () => {
         queryClient.invalidateQueries({ queryKey: ['pocItems'] });
@@ -267,7 +277,7 @@ export default function StatePocPage() {
         if (context?.previousItems) {
           queryClient.setQueryData(['pocItems'], context.previousItems);
         }
-        console.error(`Failed to update item ${variables.id}: ${err.message}`);
+        setMutationError(`Failed to update item: ${err.message}`);
         setEditingItem(null); // Clear editing state on error
       },
       onSuccess: () => {
@@ -294,6 +304,55 @@ export default function StatePocPage() {
     setEditingItem(null);
   };
 
+  // Reset Items Mutation
+  const resetItemsMutation = useMutation<
+    { message: string; items: Item[] },
+    Error,
+    void,
+    { previousItems?: Item[] }
+  >(
+    {
+      mutationFn: async () => {
+        const response = await fetch(ITEMS_API_ENDPOINT, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'reset' }),
+        });
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({ message: 'Failed to reset items. Server error.' }));
+          throw new Error(errorData.message || 'Failed to reset items');
+        }
+        return response.json();
+      },
+      onMutate: async () => {
+        await queryClient.cancelQueries({ queryKey: ['pocItems'] });
+        const previousItems = queryClient.getQueryData<Item[]>(['pocItems']);
+        // Optimistically update to initial state
+        queryClient.setQueryData<Item[]>(['pocItems'], [
+          { id: '1', text: 'Learn TanStack Query', completed: true },
+          { id: '2', text: 'Implement Optimistic Updates', completed: false },
+          { id: '3', text: 'Showcase Zod Validation', completed: false },
+        ]);
+        return { previousItems };
+      },
+      onError: (err, _, context) => {
+        if (context?.previousItems) {
+          queryClient.setQueryData(['pocItems'], context.previousItems);
+        }
+        setMutationError(`Failed to reset items: ${err.message}`);
+      },
+      onSettled: () => {
+        queryClient.invalidateQueries({ queryKey: ['pocItems'] });
+      },
+    }
+  );
+
+  const handleResetItems = () => {
+    if (confirm('Are you sure you want to reset all items to their initial state?')) {
+      resetItemsMutation.mutate();
+    }
+  };
+
 
   return (
     <div className="container mx-auto p-4 space-y-8">
@@ -305,26 +364,65 @@ export default function StatePocPage() {
         </p>
       </header>
 
+      {/* Error Display */}
+      {mutationError && (
+        <Alert variant="destructive" className="animate-in fade-in slide-in-from-top-2">
+          <Terminal className="h-4 w-4" />
+          <AlertTitle>Operation Failed</AlertTitle>
+          <AlertDescription>{mutationError}</AlertDescription>
+        </Alert>
+      )}
+
       {/* Item Filter UI */}
-      <div className="flex justify-center space-x-2 mb-6">
-        {(['all', 'active', 'completed'] as ItemFilter[]).map((filterValue) => (
-          <Button
-            key={filterValue}
-            variant={currentFilter === filterValue ? 'default' : 'outline'}
-            onClick={() => setFilter(filterValue)}
-          >
-            {filterValue.charAt(0).toUpperCase() + filterValue.slice(1)}
-          </Button>
-        ))}
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Zustand: Global Client-Side State</CardTitle>
+          <CardDescription>
+            The filter below demonstrates Zustand managing UI state that doesn't need server persistence.
+            Current filter: <Badge variant="secondary" className="ml-1">{currentFilter}</Badge>
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex justify-center space-x-2">
+            {(['all', 'active', 'completed'] as ItemFilter[]).map((filterValue) => (
+              <Button
+                key={filterValue}
+                variant={currentFilter === filterValue ? 'default' : 'outline'}
+                onClick={() => setFilter(filterValue)}
+                title={`Show ${filterValue} items`}
+              >
+                {filterValue.charAt(0).toUpperCase() + filterValue.slice(1)}
+              </Button>
+            ))}
+          </div>
+          <p className="text-sm text-muted-foreground text-center mt-4">
+            This filter state is stored in a Zustand store and persists across component re-renders,
+            but resets when you refresh the page (client-side only).
+          </p>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle>TanStack Query: Data Fetching & Caching</CardTitle>
-          <CardDescription>
-            Fetching a list of items from an API. TanStack Query handles loading, error states, and caching automatically.
-            Try navigating away and back to this page to see cached data load instantly.
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <CardTitle>TanStack Query: Data Fetching & Caching</CardTitle>
+              <CardDescription>
+                Fetching a list of items from an API. TanStack Query handles loading, error states, and caching automatically.
+                Try navigating away and back to this page to see cached data load instantly.
+              </CardDescription>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleResetItems}
+              disabled={resetItemsMutation.isPending || isLoading}
+              title="Reset all items to their initial state"
+            >
+              <RotateCcw className="h-4 w-4 mr-2" />
+              Reset Data
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           {isLoading && <p>Loading items...</p>}
@@ -341,8 +439,20 @@ export default function StatePocPage() {
           {items && items.length === 0 && !isLoading && <p>No items yet. Add one above!</p>}
           {filteredItems && filteredItems.length > 0 && (
             <ul className="space-y-2">
-              {filteredItems.map((item: Item) => (
-                <li key={item.id} className="flex items-center justify-between p-2 border rounded-md min-h-[60px]">
+              {filteredItems.map((item: Item) => {
+                // Check if this item is being mutated
+                const isBeingToggled = toggleItemMutation.isPending && toggleItemMutation.variables?.id === item.id;
+                const isBeingDeleted = deleteItemMutation.isPending && deleteItemMutation.variables === item.id;
+                const isBeingEdited = editItemMutation.isPending && editItemMutation.variables?.id === item.id;
+                const isOptimistic = isBeingToggled || isBeingDeleted || isBeingEdited;
+                
+                return (
+                  <li 
+                    key={item.id} 
+                    className={`flex items-center justify-between p-2 border rounded-md min-h-[60px] transition-all duration-200 ${
+                      isOptimistic ? 'opacity-70 bg-muted/50' : ''
+                    } ${isBeingDeleted ? 'scale-95' : ''}`}
+                  >
                                     {editingItem?.id === item.id ? (
                     <div className="flex-grow mr-2">
                       <Input 
@@ -362,20 +472,21 @@ export default function StatePocPage() {
                       onClick={() => handleToggleComplete(item.id, item.completed)}
                       disabled={(toggleItemMutation.isPending && toggleItemMutation.variables?.id === item.id) || !!editingItem}
                       className="h-8 w-8"
+                      title={item.completed ? "Mark as incomplete" : "Mark as complete"}
                     >
                       {item.completed ? <CheckSquare className="h-4 w-4" /> : <Square className="h-4 w-4" />}
                     </Button>
                     {editingItem?.id === item.id ? (
                       <>
-                        <Button variant="outline" size="icon" onClick={handleSaveEdit} className="h-8 w-8 mr-1" disabled={editItemMutation.isPending || !editingItem.text.trim()}>
+                        <Button variant="outline" size="icon" onClick={handleSaveEdit} className="h-8 w-8 mr-1" disabled={editItemMutation.isPending || !editingItem.text.trim()} title="Save changes">
                           <CheckSquare className="h-4 w-4 text-green-500" />
                         </Button>
-                        <Button variant="outline" size="icon" onClick={handleCancelEdit} className="h-8 w-8">
+                        <Button variant="outline" size="icon" onClick={handleCancelEdit} className="h-8 w-8" title="Cancel editing">
                           <Square className="h-4 w-4 text-red-500" /> {/* Using Square as a stand-in for Cancel/X icon */}
                         </Button>
                       </>
                     ) : (
-                      <Button variant="outline" size="icon" onClick={() => handleEditItem(item)} className="h-8 w-8" disabled={deleteItemMutation.isPending || toggleItemMutation.isPending || addItemMutation.isPending || !!editingItem}>
+                      <Button variant="outline" size="icon" onClick={() => handleEditItem(item)} className="h-8 w-8" disabled={deleteItemMutation.isPending || toggleItemMutation.isPending || addItemMutation.isPending || !!editingItem} title="Edit item">
                         <Pencil className="h-4 w-4" />
                       </Button>
                     )}
@@ -385,12 +496,14 @@ export default function StatePocPage() {
                       onClick={() => handleDeleteItem(item.id)}
                       disabled={(deleteItemMutation.isPending && deleteItemMutation.variables === item.id) || !!editingItem}
                       className="h-8 w-8"
+                      title="Delete item"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
                 </li>
-              ))}
+                );
+              })}
             </ul>
           )}
           {items && items.length === 0 && <p>No items found. Try adding some!</p>}
@@ -427,26 +540,28 @@ export default function StatePocPage() {
             and then syncs with the server. If the server request fails, the change is reverted.
             Client-side validation is handled by Zod and React Hook Form.
           </p>
-          <div className="mt-4 p-3 bg-slate-50 dark:bg-slate-800 rounded-md">
-            <h4 className="font-semibold text-sm mb-1">Try this:</h4>
-            <ul className="list-disc list-inside text-xs text-muted-foreground space-y-1">
-              <li>Add a valid item. Notice it appears instantly.</li>
-              <li>Try to submit an empty item (client-side validation).</li>
-              <li>(If backend is configured to fail sometimes) Observe optimistic revert.</li>
-            </ul>
+          <div className="mt-4 space-y-3">
+            <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-md">
+              <h4 className="font-semibold text-sm mb-1">Try this:</h4>
+              <ul className="list-disc list-inside text-xs text-muted-foreground space-y-1">
+                <li>Add a valid item. Notice it appears instantly.</li>
+                <li>Try to submit an empty item (client-side validation).</li>
+                <li>Toggle, edit, or delete items - watch for the fade effect during updates.</li>
+                <li>Items being mutated show visual feedback (opacity and background change).</li>
+              </ul>
+            </div>
+            <Alert>
+              <Info className="h-4 w-4" />
+              <AlertTitle>Visual Feedback</AlertTitle>
+              <AlertDescription>
+                Items being updated show a subtle fade effect and background change. This helps users understand
+                that an operation is in progress. If the operation fails, the item will return to its previous state.
+              </AlertDescription>
+            </Alert>
           </div>
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Zustand: Global Client-Side State</CardTitle>
-          <CardDescription>A simple example of managing global state that is not tied to server data.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground text-sm">[Zustand example will be implemented here]</p>
-        </CardContent>
-      </Card>
 
       <Card>
         <CardHeader>

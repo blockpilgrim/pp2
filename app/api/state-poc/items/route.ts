@@ -10,12 +10,15 @@ const itemSchema = z.object({
 
 export type Item = z.infer<typeof itemSchema>;
 
-// In-memory store for items
-let items: Item[] = [
+// Initial data for reset functionality
+const initialItems: Item[] = [
   { id: '1', text: 'Learn TanStack Query', completed: true },
   { id: '2', text: 'Implement Optimistic Updates', completed: false },
   { id: '3', text: 'Showcase Zod Validation', completed: false },
 ];
+
+// In-memory store for items
+let items: Item[] = [...initialItems];
 
 // GET: Fetch all items
 export async function GET(request: NextRequest) {
@@ -76,14 +79,12 @@ export async function PATCH(request: NextRequest) {
 // DELETE: Delete an item
 export async function DELETE(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
+    const body = await request.json();
+    const { id } = z.object({ id: z.string() }).parse(body);
 
     if (!id) {
       return NextResponse.json({ error: 'Item ID is required for deletion' }, { status: 400 });
     }
-    const itemSchemaIdOnly = z.object({ id: z.string() });
-    itemSchemaIdOnly.parse({ id }); // Validate ID format
 
     const initialLength = items.length;
     items = items.filter(item => item.id !== id);
@@ -93,7 +94,29 @@ export async function DELETE(request: NextRequest) {
     }
     // Simulate network delay
     await new Promise(resolve => setTimeout(resolve, 500));
-    return NextResponse.json({ message: 'Item deleted successfully' }, { status: 200 });
+    return NextResponse.json({ id, message: 'Item deleted successfully' }, { status: 200 });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json({ error: error.errors }, { status: 400 });
+    }
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
+}
+
+// PUT: Reset items to initial state
+export async function PUT(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { action } = z.object({ action: z.literal('reset') }).parse(body);
+    
+    if (action === 'reset') {
+      items = [...initialItems];
+      // Simulate network delay
+      await new Promise(resolve => setTimeout(resolve, 500));
+      return NextResponse.json({ message: 'Items reset successfully', items });
+    }
+    
+    return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: error.errors }, { status: 400 });
